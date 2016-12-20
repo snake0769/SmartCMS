@@ -19,15 +19,20 @@ use PhpParser\Error;
 class RoleService extends Service
 {
 
-    protected static $baseModel = Role::class;
+    /**@var User**/
+    protected $baseModel;
 
-
-
-    public static function save(array $attributes)
+    protected function __construct()
     {
+        $this->baseModel = Role::class;
+        parent::__construct();
+    }
 
+
+    public function save(array $attributes)
+    {
         //如果属性未发生更改，则直接返回
-        $ROLE = Map::model('Role');
+        $ROLE = $this->baseModel;
         if(isset($attributes['id']) && self::diff($attributes['id'],$attributes)){
             return new $ROLE($attributes);
         }
@@ -74,5 +79,6 @@ class RoleService extends Service
 
         return true;
     }
+
 
 }

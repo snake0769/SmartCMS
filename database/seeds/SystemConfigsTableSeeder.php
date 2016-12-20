@@ -18,7 +18,7 @@ class SystemConfigsTableSeeder extends Seeder
 
         $datas = [
             [
-                'type'            => '后台标题',
+                "id" =>\app\Components\Util\StringHelper::uuid(),
                 'name'            => '后台标题',
                 'key'              => 'admin.base.title',
                 'value'             => 'Admin',
@@ -26,6 +26,7 @@ class SystemConfigsTableSeeder extends Seeder
                 'updated_at'        => Carbon::now(),
             ],
             [
+                "id" =>\app\Components\Util\StringHelper::uuid(),
                 'name'            => '关键字',
                 'key'              => 'admin.base.keywords',
                 'value'             => '站点管理,后台',
@@ -33,6 +34,7 @@ class SystemConfigsTableSeeder extends Seeder
                 'updated_at'        => Carbon::now(),
             ],
             [
+                "id" =>\app\Components\Util\StringHelper::uuid(),
                 'name'            => '后台描述',
                 'key'              => 'admin.base.description',
                 'value'             => '这是企业网站管理后台',
@@ -40,6 +42,7 @@ class SystemConfigsTableSeeder extends Seeder
                 'updated_at'        => Carbon::now(),
             ],
             [
+                "id" =>\app\Components\Util\StringHelper::uuid(),
                 'name'            => '公司名称',
                 'key'              => 'admin.base.companyName',
                 'value'             => 'Admin.LTD',

@@ -111,7 +111,7 @@ public class UploadHandler : Handler
             case UploadState.TypeNotAllow:
                 return "不允许的文件格式";
             case UploadState.NetworkError:
-                return "网络错误"; 
+                return "网络异常";
         }
         return "未知错误";
     }

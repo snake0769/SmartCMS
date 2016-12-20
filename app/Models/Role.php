@@ -12,22 +12,6 @@ class Role extends BaseModel
     protected $fillable = ["name","label"];
 
 
-    /**
-     * 从Role数组提取label字段并组成一个字符串返回
-     * @param $roles
-     * @return string
-     */
-    public static function drawLabel($roles){
-        $labels = "";
-        foreach($roles as $role){
-            $labels .= trim($role->name.",");
-        }
-        if($labels !== ""){
-            $labels = substr($labels,0,strlen($labels)-1);
-        }
-        return $labels;
-    }
-
     public function users(){
         return $this->belongsToMany(User::class,"role_user");
     }

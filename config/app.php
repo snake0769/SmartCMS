@@ -159,6 +159,11 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\MapperServiceProvider::class,
 
+        /*
+         * 专供phpstorm ide代码提醒使用
+         */
+        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class
+
     ],
 
     /*
@@ -204,6 +209,9 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+
+        //补充自定义facades别称，以确保_my_ide_heper.php文件的类能正确加载
+        'Map' => App\Foundation\Facades\Map::class,
 
     ],
 

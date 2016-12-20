@@ -88,19 +88,19 @@ $(function(){
 			$(form).ajaxSubmit({
 				type:"post",
 				url:"{{URL::to('/admin/users')}}",
-				success: function(result){
-					if(result.errcode == 0){
-						alert("操作成功！");
+				success: function(response){
+					if(response.result == 'success'){
+						alert("操作成功!");
 						var index = parent.layer.getFrameIndex(window.name);
 						parent.$('.btn-refresh').click();
 						parent.layer.close(index);
 					}else{
-						alert(result.msg);
+						alert(response.msg);
 					}
 
 				},
 				error: function () {
-					alert("网络错误！");
+					alert("系统异常!");
 				}
 			});
 

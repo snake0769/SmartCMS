@@ -66,6 +66,7 @@ class RequestUrlsTableSeeder extends Seeder
                 }
 
                 $datas[] = [
+                    "id" =>\app\Components\Util\StringHelper::uuid(),
                     "permission" => $permission,"url" => $url,"name" => "","method"=>$requestMethod,
                     "created_at" => Carbon::now()->toDateTimeString(),"updated_at" => Carbon::now()->toDateTimeString()
                 ];
@@ -82,6 +83,7 @@ class RequestUrlsTableSeeder extends Seeder
     private function generateInterface($method,$url,$permission)
     {
         $data = [
+            "id" =>\app\Components\Util\StringHelper::uuid(),
             "permission" => $permission, "url" => $url,  "method" => $method,
             "created_at" => Carbon::now()->toDateTimeString(), "updated_at" => Carbon::now()->toDateTimeString()
         ];

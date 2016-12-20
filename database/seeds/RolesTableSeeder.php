@@ -13,6 +13,7 @@ class RolesTableSeeder extends Seeder
     public function run()
     {
         $datas[] = [
+            "id" =>'39dc2c9e-d123-a147-8e9f-6fefc9bb23b1',
             "name" => "超级管理员",
             "label" => "",
             "description" => "拥有所有权限",

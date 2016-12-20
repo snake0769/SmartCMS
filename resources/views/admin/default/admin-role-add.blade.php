@@ -119,7 +119,7 @@ $(function(){
 
 				},
 				error: function(){
-					alert('网络错误');
+					alert('网络异常');
 				}
 			});
 

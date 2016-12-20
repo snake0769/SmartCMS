@@ -12,7 +12,12 @@ namespace App\Exceptions;
 
 use Exception;
 
-class BussinessException extends \Exception
+/**
+ * 业务异常
+ * Class BusinessException
+ * @package App\Exceptions
+ */
+class BusinessException extends \Exception
 {
 
 }

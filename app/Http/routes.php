@@ -12,9 +12,11 @@
 */
 
 Route::group([],function(){
-    require (__DIR__ . '/Routes/Backend.php');
+    require (__DIR__ . '/Routes/backendRoutes.php');
 });
 
 Route::group([],function(){
-    require (__DIR__ . '/Routes/Frontend.php');
+    require (__DIR__ . '/Routes/frontendRoutes.php');
 });
+
+Route::any('test/index',['uses'=>'TestController@index']);

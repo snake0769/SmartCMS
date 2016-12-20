@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Foundation\Contracts\DatabaseMapper;
+use App\Foundation\Mapper\Mapper;
 use Illuminate\Support\ServiceProvider;
 
 class MapperServiceProvider extends ServiceProvider
@@ -27,7 +27,7 @@ class MapperServiceProvider extends ServiceProvider
         /*$this->app->bind('App\Foundation\Contracts\Mapper', 'App\Foundation\Contracts\DatabaseMapper');*/
 
         $this->app->singleton('map', function ($app) {
-            return new DatabaseMapper();
+            return new Mapper();
         });
     }
 }

@@ -13,7 +13,8 @@ class CreateRequestUrlsTable extends Migration
     public function up()
     {
         Schema::create('request_urls', function (Blueprint $table) {
-            $table->increments('id');
+            $table->string('id')->unique();
+            $table->primary('id');
             $table->string('url');
             $table->string('name');
             $table->string('method')->default('get');

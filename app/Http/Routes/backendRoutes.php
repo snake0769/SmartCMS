@@ -12,20 +12,15 @@
 */
 use Illuminate\Support\Facades\View;
 
+
+
 Route::group(['prefix'=>'admin'],function(){
-    Route::controller('auth', "Admin\\AuthController");
+    Route::controller('auth', 'Admin\\AuthController');
+    Route::controller('home','Admin\\HomeController');
 
-    Route::get("/index",function(){
-
-        View::addExtension('html', 'php');
-        return view('admin.default.index');
-    });
-
-    Route::get("/welcome",function(){
-
-        View::addExtension('html', 'php');
-        return view('admin.default.index');
-    });
+    foreach(glob(app_path('Http\Routes\Backend').'\*.php') as $file){
+        require  $file;
+    }
 
 });
 

@@ -9,53 +9,74 @@
  */
 namespace App\Service;
 
-use App\Exceptions\Error;
-use App\Foundation\Facades\Map;
+use app\Components\Database\DataTablesHelper;
+use App\Exceptions\BusinessException;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class UserService extends Service
 {
 
-    //protected static $models = ['user'=>User::class];
+    /**@var User**/
+    protected $baseModel;
+    /**@var Role**/
+    protected $roleModel;
 
-    protected static $baseModel = User::class;
-
-
-    public static function save(array $attributes)
+    protected function __construct()
     {
-        //如果属性未发生更改，则直接返回
-        $USER = Map::model('User');
-        if(isset($attributes['id']) && self::diff($attributes['id'],$attributes)){
-            return new $USER($attributes);
-        }
-        if(isset($attributes['password'])){
-            $attributes['password'] = bcrypt($attributes['password']);
-        }
+        $this->baseModel = User::class;
+        $this->roleModel = \Map::getClass(Role::class,self::class);
 
+        parent::__construct();
+    }
 
-        $roles = array_pull($attributes,"roles");
-        if(isset($attributes['username'])){
-            $username = $attributes['username'];
-            if($username !== ""){
-                if(! self::isUserNameExists($username)){
-                    $user =  parent::save($attributes);
-                }else{
-                    return Error::USER_DUMPLICATED_USERNAME;
-                }
+    /**
+     * 添加或更新用户
+     * @param array $attributes 如果属性中包含id，则为更新，否则添加
+     * @return boolean
+     * @throws BusinessException|\Exception
+     */
+    public function save(array $attributes)
+    {
+        try {
+            \DB::beginTransaction();
+
+            //如果属性未发生更改，则直接返回
+            if (isset($attributes['password'])) {
+                $attributes['password'] = bcrypt($attributes['password']);
             }
-        }else{
-            $user =  parent::save($attributes);
+
+            $roles = array_pull($attributes, "roles");
+            if (isset($attributes['username'])) {
+                $username = $attributes['username'];
+                if ($username !== "") {
+                    if (!$this->isUserNameExists($username)) {
+                        $user = parent::save($attributes);
+                    } else {
+                        throw new BusinessException('用户名已存在');
+                    }
+                }
+            } else {
+                $user = parent::save($attributes);
+            }
+
+            //保存基本User数据后，保存Role数据
+            /**@var $user User* */
+            if ($user !== false && !empty($roles)) {
+                $roles = explode(',', $roles);
+                $user->removeRoles();
+                $user->assignRoles($roles);
+            }
+
+            \DB::commit();
+        } catch (\Exception $ex) {
+            \DB::rollback();
+            throw $ex;
         }
 
-        //保存基本User数据后，保存Role数据
-        if($user !== false && !empty($roles)){
-            $roles = explode(',',$roles);
-            $user->removeRoles();
-            $user->assignRoles($roles);
-        }
-
-        return $user;
+        return true;
     }
 
 
@@ -64,7 +85,7 @@ class UserService extends Service
      * @param int $id
      * @param boolean $active
      */
-    public static function activeUser($id,$active){
+    public function activeUser($id,$active){
     }
 
     /**
@@ -72,38 +93,80 @@ class UserService extends Service
      * @param string $username
      * @return boolean
      */
-    protected static function isUserNameExists($username){
-        $USER = self::$baseModel;
+    protected function isUserNameExists($username){
+        $USER = $this->baseModel;
         $rs = $USER::where('username','=',$username)->exists();
         return $rs;
     }
 
+
     /**
-     * 根据传入的id，查询并对比数据是否相同；如果相同，返回true，否则返回false
-     * @param int $id
-     * @param array $attributes
-     * @return bool
+     * 获取用户的角色标签组。如果有多个角色标签，则组成一个以','作为分隔符的字符串返回
+     * @param $user User
+     * @return string
      */
-    protected static function diff($id, $attributes){
-        if( !empty($id)){
-           $user =  self::get($id);
+    public function getRolesLabel($user){
+        /*$roles = $user->roles;
+        $labels = "";
+        foreach($roles as $role){
+            $labels .= trim($role->name.",");
+        }
+        if($labels !== ""){
+            $labels = substr($labels,0,strlen($labels)-1);
+        }
+        return $labels;*/
+    }
 
-            //对比角色属性
-            $roleIds = array_pull($attributes,'roles');
-            if( !$user->hasRole($roleIds) ){
-                return false;
-            }
-
-            //移除_token属性
-            unset($attributes['_token']);
-            $user = $user->toArray();
-            foreach($attributes as $key=>$value){
-                if( strval($user[$key]) !== strval($attributes[$key])){
-                    return false;
-                }
+    /**
+     * 粘合角色名称
+     * @param $roles array
+     * @return string
+     */
+    public function glueRolesName(array $roles){
+        $result = '';
+        if(count($roles) == 0 ){
+            return $result;
+        }else{
+            foreach($roles as $role){
+                $result .= $role['name'].',';
             }
         }
+        $result = substr($result,0,-1);
 
-        return true;
+        return $result;
+    }
+
+    /**
+     * 查询用户列表
+     * @param $params
+     * @return array
+     */
+    public function getList($params){
+        /**@var $USER User**/
+        $USER = $this->baseModel;
+        $page = self::convertPage($params);
+        $data =  $USER::getList($params,$page['page'],$page['perPage']);
+
+        //整理输出数据，将相关Model实例转为数组
+        $items = (new Collection($data['items']))->toArray();
+        foreach($items as &$item){
+            $item['roles'] = $this->glueRolesName($item['roles']);
+        }
+        $data['items'] = $items;
+
+        return $data;
+    }
+
+    /**
+     * 获取用户详细信息，包含角色列表
+     * @param $id
+     * @return array
+     */
+    public function get($id){
+        $user = parent::one($id,"roles");
+        $roles = RoleService::instance()->all();
+        $data['user'] = $user->toArray();
+        $data['roles'] = $roles->toArray();
+        return $data;
     }
 }

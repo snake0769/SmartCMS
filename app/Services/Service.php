@@ -9,10 +9,10 @@
  */
 namespace App\Service;
 
-use App\Exceptions\Error;
-use App\Exceptions\ServiceException;
-use App\Foundation\DatabaseMapper;
-use App\Foundation\ModelReflects;
+use app\Components\Database\DataTablesHelper;
+use app\Components\Database\ServiceHelper;
+use App\Exceptions\BusinessException;
+use App\Models\BaseModel;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,70 +20,43 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Service
+abstract class Service
 {
+    use DataTablesHelper;
 
     /** 与服务关联的BaseModel类 */
-    protected static $baseModel = null;
+    protected $baseModel;
+    /** @var array 服务子类唯一实例存储数组 */
+    protected static $instances = [];
 
-
-    /**
-     * 设置Model类数组
-     * @param $models
-     */
-    /*public function setModels($models){
-        if(is_array($models) && count($models) > 0){
-            foreach($models as $class){
-                if( !class_exists($class) ){
-                    throw new ServiceException(self::ERR_001);
-                }
-            }
-
-            static::$models = $models;
-        }
-    }*/
-
-
-    /**
-     * 获取Model类数组
-     * @return array
-     */
-    /*public function getModels(){
-        return static::$models;
-    }*/
-
-
-
-    /**
-     * 设置BaseModel类
-     * @param $model
-     */
-    public function setBaseModel($model){
-        if(!class_exists($model)){
-            throw new ServiceException(Error::RUNTIME_CLASS_NOT_FOUND);
-        }
-        static::$baseModel = $model;
-    }
-
-
-    /**
-     * 获取BaseModel类
-     * @return array
-     */
-    public function getBaseModel(){
-        return static::$baseModel;
+    protected function __construct()
+    {
+        $this->baseModel = \Map::getClass($this->baseModel,self::class);
     }
 
     /**
-     * 添加或更新，则要求传入的model必须有id字段，基于Service实现类的baseModel。
+     * 获取Service实例
+     * @return static
+     */
+    public static function instance(){
+        $class = get_called_class();
+        if(!array_key_exists($class, self::$instances)){
+            self::$instances[$class] = new $class;
+        }
+
+        return self::$instances[$class];
+    }
+
+    /**
+     * 添加或更新，更新则要求传入的model必须有id字段，基于Service实现类的baseModel。
      * 如果操作成功，则返回相应的model实例,否则返回false
      * @param array $attributes
-     * @return mixed
+     * @return BaseModel|false
      */
-    public static function save(array $attributes){
+    public function save(array $attributes){
         //根据attributes是否包含id值，执行插入或更新操作，并称“保存”操作
-        $model = new static::$baseModel($attributes);
-        $MODEL = static::$baseModel;
+        /**@var $MODEL BaseModel*/
+        $MODEL = $this->baseModel;
         $id = empty($attributes['id']) ? -1:$attributes['id'];
         $model = $MODEL::updateOrCreate(["id"=>$id],$attributes);
 
@@ -96,15 +69,14 @@ class Service
     /**
      * 获取指定id的信息，基于Service实现类的baseModel
      * @param int null $id
-     * @param int null $active
      * @param array|string $relations
      * @return User | Collection
      */
-    public static function get($id=null,$relations=null){
+    public function one($id,$relations=null){
         if(empty($id))
-            return self::select($relations);
+            return $this->all($relations);
         else{
-            $collection =  self::select($relations,["id"=>$id]);
+            $collection =  $this->all($relations,["id"=>$id]);
             if($collection !== null){
                 return $collection[0];
             }else{
@@ -118,41 +90,28 @@ class Service
      * 查询，基于Service实现类的baseModel
      * @param array $with
      * @param array $where
-     * @param string $limit
-     * @param string $columns
+     * @param array $columns
      * @param array $orderBy
-     * @param int $pageNo
-     * @param int $nums
      * @return mixed
      */
-    public static function select($with=null,$where=null,$columns=['*'],$orderBy=['id'=>'desc'],$pageNo=null,$nums=15){
-        $MODEL = static::$baseModel;
+    public function all($with = null,$where=null, $columns=['*'], $orderBy=['created_at'=>'desc']){
         $query = null;
-
-        $query = self::buildQuery($with,$where,$columns,$orderBy);
-
-        //page
-        if($pageNo !== null && $nums > 0){
-            if($pageNo > 0 && is_int($pageNo))
-                $query = $query ? $query->offset(($pageNo-1) * $nums)->limit($nums) : $MODEL::offset(($pageNo-1) * $nums)->limit($nums);
-        }
-
+        $query = $this->query($with,$where,$columns,$orderBy);
         return $query->get();
     }
 
 
     /**
      * 创建查询器
-     * @param string $model
-     * @param array $with
+     * @param array|string $with
      * @param array $where
-     * @param string $limit
-     * @param string $columns
+     * @param array $columns
      * @param array $orderBy
      * @return Builder
      */
-    public static function buildQuery($with=null, $where=null, $columns=['*'], $orderBy=['id'=>'desc']){
-        $MODEL = static::$baseModel;
+    public function query($with=null, $where=null, $columns=['*'], $orderBy=['created_at'=>'desc']){
+        $MODEL = $this->baseModel;
+        /**@var $query Builder**/
         $query = null;
 
         //where
@@ -179,14 +138,7 @@ class Service
 
         //with relations
         if($with !== null){
-            if(is_array($with)){
-                foreach($with as $withItem){
-                    $query = $query ? $query->with($withItem) : $MODEL::with($withItem);
-                }
-            }
-            else
-                $query = $query ? $query->with($with) : $MODEL::with($with);
-
+            $query = $query ? $query->with($with) : $MODEL::with($with);
         }
 
         return $query;
@@ -196,10 +148,12 @@ class Service
     /**
      * 软删除指定id记录，成功则返回操作记录id，否则返回false或错误码
      * @param string $id
-     * @return int|boolean
+     * @return bool|null
+     * @throws BusinessException
      */
-    public static function delete($id){
-        $MODEL = static::$baseModel;
+    public function delete($id){
+        /**@var $MODEL BaseModel*/
+        $MODEL = $this->baseModel;
 
         if(strpos($id,',')){
             $ids = explode(',',$id);
@@ -210,7 +164,7 @@ class Service
                 $rs = $model->delete();
                 return $rs;
             }else{
-                return Error::USER_NOT_EXISTED;
+                throw new BusinessException('指定id模型不存在');
             }
         }
 

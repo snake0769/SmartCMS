@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
-use App\Foundation\Facades\Map;
-use App\Foundation\ModelReflects;
+use app\Components\Database\ModelHelper;
+use app\Components\Database\QueryBuilder;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Collection;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 
-class User extends Authenticatable
+class User extends BaseModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 {
-
-    use Activatable,SoftDeletes;
-    use ModelReflects;
+    use Authenticatable, Authorizable, CanResetPassword;
+    use Activatable,SoftDeletes,QuickQuery;
 
     /**
      * The attributes that are mass assignable.
@@ -33,7 +37,7 @@ class User extends Authenticatable
     ];
 
     public function roles(){
-        return $this->belongsToMany(Role::class,"role_user");
+        return $this->belongsToMany(Role::class,"role_user",'user_id','role_id');
     }
 
     public function permissions(){
@@ -52,6 +56,45 @@ class User extends Authenticatable
         }
 
         return $permissions;
+    }
+
+
+    /**
+     * 搜索用户列表
+     * @param $params
+     * @param $page
+     * @param $perPage
+     * @return array
+     */
+    public static function getList($params,$page,$perPage=20){
+        $cols = ['id','username','nickname','created_at','active'];
+
+        /** @var $query QueryBuilder*/
+        $query = self::with(['roles'=>['id','name']]);
+        if(!array_value_empty('start_date',$params)){
+            $query->where('created_at','>=',$params['start_date']);
+        }
+        if(!array_value_empty('end_date',$params)){
+            $query->where('created_at','<=',$params['end_date']);
+        }
+
+        //登录名、昵称作为关键字查找
+        if(!array_value_empty('keyword',$params)){
+            $query->where(function($query)use($params){
+                $query->where('username','like','%'.$params['keyword'].'%')
+                    ->orWhere('nickname','like','%'.$params['keyword'].'%');
+            });
+
+        }
+
+        if(array_key_exists('order',$params)){
+            $query->order($params['order']);
+        }
+
+        $total = $query->count();
+        $items = $query->paginate($perPage,$cols,'page',$page)->items();
+
+        return ['total'=>$total,'items'=>$items,'page'=>$page,'perPage'=>$perPage];
     }
 
     /**
@@ -96,7 +139,7 @@ class User extends Authenticatable
      */
     public function hasPermission($permissions, $perfect=true, $field='id')
     {
-        $PERMISSION = Map::model('Permission');
+        $PERMISSION = \Map::getClass(Permission::class,self::class);
         //传入Permission (默认)Id字符串或数组
         if(is_string($permissions) || is_int($permissions)){
             $permission = $PERMISSION::where($field,$permissions)->first();
@@ -136,7 +179,7 @@ class User extends Authenticatable
      */
     public function assignRoles($roles)
     {
-        $ROLE = Map::model('Role');
+        $ROLE = \Map::getClass(Role::class,self::class);
         //传入Role id字符串
         if(is_string($roles) || is_int($roles)){
             if( !$this->hasRole($roles) ){

@@ -13,6 +13,7 @@ class UsersTableSeeder extends Seeder
     public function run()
     {
         $datas[] = [
+            "id" =>'39dc2c9e-d037-bb33-15e6-9e5a97c76d79',
             "username" => "admin",
             "nickName" => "admin",
             "email" => "admin@admin.com",

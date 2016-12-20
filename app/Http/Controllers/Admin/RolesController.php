@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Foundation\Facades\Map;
 use App\Models\Permission;
 use App\Service\RoleService;
+use App\Service\UserService;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -13,8 +14,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Exception;
 
+/**
+ * 角色管理控制器
+ * Class RolesController
+ * @package App\Http\Controllers\Admin
+ */
 class RolesController extends Controller
 {
+
     public function index(Request $request)
     {
         $paramters = $request->all();
@@ -142,7 +149,7 @@ class RolesController extends Controller
     {
         $ids = $request->get('ids');
         if (empty($ids))
-            return responseFalied(-1, "请勾选想要删除的条目");
+            return responseFailed(-1, "请勾选想要删除的条目");
 
         try {
             DB::beginTransaction();

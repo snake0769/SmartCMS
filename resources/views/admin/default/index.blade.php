@@ -193,7 +193,7 @@
 	<div id="iframe_box" class="Hui-article">
 		<div class="show_iframe">
 			<div style="display:none" class="loading"></div>
-			<iframe scrolling="yes" frameborder="0" src="{{URL::to('/admin/index/welcome')}}"></iframe>
+			<iframe scrolling="yes" frameborder="0" src="{{URL::to('/admin/home/welcome')}}"></iframe>
 		</div>
 	</div>
 </section>
@@ -201,6 +201,7 @@
 <script type="text/javascript" src="{{asset('js/backend/lib/layer/2.1/layer.js')}}"></script>
 <script type="text/javascript" src="{{asset('js/backend/static/h-ui/js/H-ui.js')}}"></script>
 <script type="text/javascript" src="{{asset('js/backend/static/h-ui.admin/js/H-ui.admin.js')}}"></script>
+<script type="text/javascript" src="{{asset('js/functions.js')}}"></script>
 <script type="text/javascript">
 /*资讯-添加*/
 function article_add(title,url){
@@ -238,21 +239,21 @@ function member_add(title,url,w,h){
 	function clear(){
 		$.ajax({
 			type: 'POST',
-			url: "{{URL::to('/admin/index/clear')}}" ,
+			url: "{{URL::to('/admin/home/clear')}}" ,
 			data: {_token:'{!! csrf_token() !!}'} ,
-			success: function(result){
-				if(result.errcode == 0){
+			success: function(response){
+				if(isSuccessful(response)){
 					layer.msg('清除成功!',{icon:1,time:1000});
 					setTimeout(function(){
 						location.replace(location.href);
 					},1000);
 				}else{
-					alert(result.msg);
+					alert(response.msg);
 				}
 
 			},
 			error: function(){
-				alert('网络错误');
+				alert('网络异常');
 			}
 		});
 	}

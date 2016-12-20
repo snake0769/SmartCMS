@@ -12,6 +12,7 @@
 /**
  * 转换restful的参数字符串为参数数组，传入参数格式示例：id=1&name=admin
  * @param string $parameters
+ * @return array|null
  */
 function getRestfulParameters($parameters){
     if(!empty($parameters)){
@@ -37,31 +38,34 @@ function getRestfulParameters($parameters){
 /**
  * 响应成功,返回状态码errcode和返回数据data
  * @param array null $data
+ * @return string
  */
 function responseSuccess($data=null){
-    return response()->json(['errcode'=>0,'data'=>$data]);
+    return response()->json(['result'=>'success','data'=>$data]);
 }
 
 /**
  * 响应异常,返回状态码errcode和返回数据msg
+ * @param int $errCode
+ * @param string $msg
+ * @return string
  */
-function responseFalied($errCode=-1,$msg="failed"){
+function responseFailed($errCode=-1, $msg="unknown failed"){
     return response()->json([
-        'errcode'=>$errCode==0 ? -1:$errCode,
+        'result'=>'failed',
+        'errcode'=>$errCode,
         'msg'=>$msg]);
 }
 
 /**
  * 响应异常,可直接传入Expcetion实例，返回状态码errcode和返回数据msg
  * @param Exception $ex
+ * @return string
  */
 function responseError($ex){
-    if(! $ex instanceof \App\Exceptions\BussinessException){
-        \Illuminate\Support\Facades\Log::error($ex);
-    }
-
     return response()->json([
-        'errcode'=>$ex->getCode()==0 ? -1:$ex->getCode(),
+        'result'=>'failed',
+        'errcode'=>$ex->getCode(),
         'msg'=>$ex->getMessage()]);
 }
 
@@ -69,11 +73,12 @@ function responseError($ex){
  * 返回值是否包含错误码，若是，可指定是否抛出错误
  * @param $result
  * @return bool
+ * @throws \App\Exceptions\BusinessException
  */
 function isError($result,$throw=false){
     if(is_array($result) && isset($result['errcode'])){
         if($throw)
-            throw new \App\Exceptions\BussinessException($result['msg'],$result['errcode']);
+            throw new \App\Exceptions\BusinessException($result['msg'],$result['errcode']);
         else
             return true;
     }
@@ -81,3 +86,12 @@ function isError($result,$throw=false){
         return false;
 }
 
+/**
+ * 判断数组元素是否为空
+ * @param $key
+ * @param array $array
+ * @return bool 如果数组指定key对应的元素为空或key不存在，返回true，否则返回false
+ */
+function array_value_empty($key,array $array){
+    return (array_key_exists($key,$array) && !empty($array[$key])) ? false : true;
+}

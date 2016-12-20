@@ -27,10 +27,12 @@ class PermissionsTableSeeder extends Seeder
 
     /**
      * 生成的顶层权限插入字段数组（layer=1）
-     * @param array $permissions
+     * @param $name
+     * @param $label
      */
     private function generateTopPermission($name,$label){
         $data = [
+            //"id" =>\app\Components\Util\StringHelper::uuid(),
             "name" => $name,"label" => $label,"pid"=>0,"layer"=>1,
             "created_at" => Carbon::now()->toDateTimeString(),
             "updated_at" => Carbon::now()->toDateTimeString()
@@ -64,6 +66,7 @@ class PermissionsTableSeeder extends Seeder
                     $pid = 0;
 
                 $data = [
+                    //"id" =>\app\Components\Util\StringHelper::uuid(),
                     "name" => $objName.".$opName","label" => $opLabel,"pid"=>$pid,"layer"=>$layer,
                     "created_at" => Carbon::now()->toDateTimeString(),
                     "updated_at" => Carbon::now()->toDateTimeString()
@@ -104,6 +107,7 @@ class PermissionsTableSeeder extends Seeder
                     $pid = 0;
 
                 $data = [
+                    //"id" =>\app\Components\Util\StringHelper::uuid(),
                     "name" => $objName.".$opName","label" => $opLabel,"pid"=>$pid,"layer"=>$layer,
                     "created_at" => Carbon::now()->toDateTimeString(),
                     "updated_at" => Carbon::now()->toDateTimeString()

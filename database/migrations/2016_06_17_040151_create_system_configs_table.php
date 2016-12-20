@@ -13,7 +13,8 @@ class CreateSystemConfigsTable extends Migration
     public function up()
     {
         Schema::create('system_configs', function (Blueprint $table) {
-            $table->increments('id');
+            $table->string('id')->unique();
+            $table->primary('id');
             $table->string('name');
             $table->string("key")->unique();
             $table->string("value");
