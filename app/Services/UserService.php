@@ -33,12 +33,49 @@ class UserService extends Service
     }
 
     /**
-     * 添加或更新用户
-     * @param array $attributes 如果属性中包含id，则为更新，否则添加
+     * 更新用户
+     * @param array $attributes 必须包含id属性
      * @return boolean
      * @throws BusinessException|\Exception
      */
-    public function save(array $attributes)
+    public function update(array $attributes)
+    {
+        try {
+            \DB::beginTransaction();
+
+            //如果属性未发生更改，则直接返回
+            if (isset($attributes['password'])) {
+                $attributes['password'] = bcrypt($attributes['password']);
+            }
+
+            $roles = array_pull($attributes, "roles");
+            $rs = parent::update($attributes);
+
+            //保存基本User数据后，保存Role数据
+            /**@var $user User* */
+            if ($rs !== false && !empty($roles)) {
+                $roles = explode(',', $roles);
+                $user = new User($attributes);
+                $user->removeRoles();
+                $user->assignRoles($roles);
+            }
+
+            \DB::commit();
+        } catch (\Exception $ex) {
+            \DB::rollback();
+            throw $ex;
+        }
+
+        return true;
+    }
+
+    /**
+     * 添加用户
+     * @param array $attributes
+     * @return boolean
+     * @throws BusinessException|\Exception
+     */
+    public function create(array $attributes)
     {
         try {
             \DB::beginTransaction();
@@ -53,13 +90,13 @@ class UserService extends Service
                 $username = $attributes['username'];
                 if ($username !== "") {
                     if (!$this->isUserNameExists($username)) {
-                        $user = parent::save($attributes);
+                        $user = parent::create($attributes);
                     } else {
                         throw new BusinessException('用户名已存在');
                     }
                 }
             } else {
-                $user = parent::save($attributes);
+                $user = parent::create($attributes);
             }
 
             //保存基本User数据后，保存Role数据
@@ -85,7 +122,13 @@ class UserService extends Service
      * @param int $id
      * @param boolean $active
      */
-    public function activeUser($id,$active){
+    public function activate($id,$active){
+        $user = parent::one($id);
+        if($active == '1'){
+            return $user->activate();
+        }else{
+            return $user->inactivate();
+        }
     }
 
     /**
@@ -169,4 +212,23 @@ class UserService extends Service
         $data['roles'] = $roles->toArray();
         return $data;
     }
+
+
+    /**
+     * 重设用户密码
+     * @param $userId string 用户id
+     * @param $newPwd string 原生不被加密的新密码
+     * @param null|string $oldPwd 旧密码,如果传入不为空,则对比旧密码是否正确,正确才能执行重设密码的动作;如果为空,则直接重设密码
+     * @return bool|int
+     * @throws BusinessException
+     */
+    public function resetPassword($userId,$newPwd,$oldPwd=null)
+    {
+        $user = $this->one($userId);
+        if($oldPwd !== null && $user->password !== bcrypt($oldPwd)){
+            throw new BusinessException('旧密码错误');
+        }
+        return $user->resetPassword($newPwd);
+    }
+
 }

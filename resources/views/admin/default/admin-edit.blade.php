@@ -7,6 +7,7 @@
 <article class="page-container">
 	<form class="form form-horizontal" id="form-admin-edit"  method="post">
 		{!! csrf_field() !!}
+		<input type="text" class="input-text" value="{{$user['id']}}" placeholder="" id="id" name="id" hidden>
 	<div class="row cl">
 		<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>登录名：</label>
 		<div class="formControls col-xs-6 col-sm-7">
@@ -50,6 +51,9 @@ $(function(){
 	
 	$("#form-admin-edit").validate({
 		rules:{
+			id:{
+				required:true
+			},
 			nickname:{
 				required:true,
 				minlength:4,
@@ -63,22 +67,25 @@ $(function(){
 		focusCleanup:true,
 		success:"valid",
 		submitHandler:function(form){
+			var loadingIndex = parent.layer.load(1, {shade: [0.3, '#000']});//加入遮罩效果
 			$(form).ajaxSubmit({
-				type:"put",
-				url:"{{URL::to('/admin/users/'.$user['id'])}}",
+				type:"post",
+				url:"{{URL::to('/admin/users/edit')}}",
 				success: function(response){
-					if(response.result == 'success'){
-						alert("操作成功!");
-						var index = parent.layer.getFrameIndex(window.name);
-						parent.$('.btn-refresh').click();
-						parent.layer.close(index);
+					parent.layer.close(loadingIndex);
+					if(isSuccessful(response)){
+						parent.layer.msg('操作成功!', {icon: 1, time: 1000},function(){
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+						parent.reload();
 					}else{
-						alert(response.msg);
+						parent.layer.alert(response.msg, {icon: 2});
 					}
 
 				},
 				error: function () {
-					alert("系统异常!");
+					parent.layer.close(loadingIndex);
+					parent.layer.alert('系统异常', {icon: 2});
 				}
 			});
 

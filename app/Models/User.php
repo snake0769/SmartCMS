@@ -24,7 +24,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
      * @var array
      */
     protected $fillable = [
-        'username', 'nickname', 'email', 'password',
+        'id','username', 'nickname', 'email', 'password',
     ];
 
     /**
@@ -217,6 +217,19 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
             }
             $this->roles()->detach($roles);
         }
+    }
+
+    /**
+     * 重设用户密码
+     * @param $password string 原生不被加密的新密码
+     * @return bool|int
+     */
+    public function resetPassword($password){
+        if(empty($password)){
+           return false;
+        }
+        $this->password = bcrypt($password);
+        return $this->update();
     }
 
 }

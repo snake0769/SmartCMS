@@ -15,7 +15,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->sharrViews();
+        $this->shareViews();
+        //自定义校验器规则:
+        //like:对比字符串是否相同,大小写不敏感
+        \Validator::extend('like',function($attribute, $value, $parameters, $validator){
+            $isLike = strtolower($value) == strtolower($parameters[0]);
+            return $isLike;
+        });
     }
 
     /**
@@ -31,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * 设置其全局视图变量
      */
-    public function sharrViews(){
+    public function shareViews(){
         try{
             $configSrv = SystemConfigService::instance();
             $configs = $configSrv->getConfigs();

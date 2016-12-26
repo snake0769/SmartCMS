@@ -22,19 +22,19 @@ class MenusTableSeeder extends Seeder
         ];
         $datas[] = [
             "id" =>\app\Components\Util\StringHelper::uuid(),
-            "title" => "管理员列表","icon" => "","sort" => 1,"layer" => 2,"pid" => $id,"permission" => "admin.users.index","url" => "/admin/users/list",
+            "title" => "管理员列表","icon" => "","sort" => 1,"layer" => 2,"pid" => $id,"permission" => "admin.users.index","url" => "/admin/users/to_list",
             "created_at" => Carbon::now()->toDateTimeString(),
             "updated_at" => Carbon::now()->toDateTimeString()
         ];
         $datas[] = [
             "id" =>\app\Components\Util\StringHelper::uuid(),
-            "title" => "角色管理","icon" => "","sort" => 2,"layer" => 2,"pid" => $id,"permission" => "admin.roles.index","url" => "/admin/roles/list",
+            "title" => "角色管理","icon" => "","sort" => 2,"layer" => 2,"pid" => $id,"permission" => "admin.roles.index","url" => "/admin/roles/to_list",
             "created_at" => Carbon::now()->toDateTimeString(),
             "updated_at" => Carbon::now()->toDateTimeString()
         ];
         $datas[] = [
             "id" =>\app\Components\Util\StringHelper::uuid(),
-            "title" => "权限管理","icon" => "","sort" => 3,"layer" => 2,"pid" => $id,"permission" => "admin.permissions.index","url" => "/admin/permissions/list",
+            "title" => "权限管理","icon" => "","sort" => 3,"layer" => 2,"pid" => $id,"permission" => "admin.permissions.index","url" => "/admin/permissions/to_list",
             "created_at" => Carbon::now()->toDateTimeString(),
             "updated_at" => Carbon::now()->toDateTimeString()
         ];
@@ -49,13 +49,13 @@ class MenusTableSeeder extends Seeder
         ];
         $datas[] = [
             "id" =>\app\Components\Util\StringHelper::uuid(),
-            "title" => "系统设置","icon" => "","sort" => 1,"layer" => 2,"pid" => $id,"permission" => "admin.system.index","url" => "/admin/system/list",
+            "title" => "系统设置","icon" => "","sort" => 1,"layer" => 2,"pid" => $id,"permission" => "admin.system.index","url" => "/admin/system/to_list",
             "created_at" => Carbon::now()->toDateTimeString(),
             "updated_at" => Carbon::now()->toDateTimeString()
         ];
         $datas[] = [
             "id" =>\app\Components\Util\StringHelper::uuid(),
-            "title" => "系统日志","icon" => "","sort" => 2,"layer" => 2,"pid" => $id,"permission" => "admin.logs.index","url" => "/admin/logs/list",
+            "title" => "系统日志","icon" => "","sort" => 2,"layer" => 2,"pid" => $id,"permission" => "admin.logs.index","url" => "/admin/logs/to_list",
             "created_at" => Carbon::now()->toDateTimeString(),
             "updated_at" => Carbon::now()->toDateTimeString()
         ];

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use app\Components\Validation\CaptchaValidation;
 use App\Models\User;
 use Gregwar\Captcha\CaptchaBuilder;
 use Illuminate\Http\Request;
@@ -26,14 +27,17 @@ class AuthController extends Controller
     |
     */
 
-    use AuthenticatesAndRegistersUsers, ThrottlesLogins;
+    use AuthenticatesAndRegistersUsers, ThrottlesLogins, CaptchaValidation{
+        CaptchaValidation::validateLogin insteadof AuthenticatesAndRegistersUsers;
+    }
+
 
     /**
      * Where to redirect users after login / registration.
      *
      * @var string
      */
-    protected $redirectTo = '/admin/index/index';
+    protected $redirectTo = '/admin/home/index';
 
 
     /**
@@ -118,8 +122,7 @@ class AuthController extends Controller
     public function logout()
     {
         Auth::guard($this->getGuard())->logout();
-
-        return view('admin.auth.logout');
+        return redirect('admin/home');
     }
 
 

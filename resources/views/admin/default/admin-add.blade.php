@@ -71,36 +71,39 @@ $(function(){
 				maxlength:16
 			},
 			password:{
-				required:true,
+				required:true
 			},
 			password2:{
 				required:true,
 				equalTo: "#password"
 			},
 			role:{
-				required:true,
-			},
+				required:true
+			}
 		},
 		onkeyup:false,
 		focusCleanup:true,
 		success:"valid",
 		submitHandler:function(form){
+			var loadingIndex = parent.layer.load(1, {shade: [0.3, '#000']});//加入遮罩效果
 			$(form).ajaxSubmit({
 				type:"post",
-				url:"{{URL::to('/admin/users')}}",
+				url:"{{URL::to('/admin/users/create')}}",
 				success: function(response){
-					if(response.result == 'success'){
-						alert("操作成功!");
-						var index = parent.layer.getFrameIndex(window.name);
-						parent.$('.btn-refresh').click();
-						parent.layer.close(index);
+					parent.layer.close(loadingIndex);
+					if(isSuccessful(response)){
+						parent.layer.msg('操作成功!', {icon: 1, time: 1000},function(){
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+						parent.reload();
 					}else{
-						alert(response.msg);
+						parent.layer.alert(response.msg, {icon: 2});
 					}
 
 				},
 				error: function () {
-					alert("系统异常!");
+					parent.layer.close(loadingIndex);
+					parent.layer.alert('系统异常', {icon: 2});
 				}
 			});
 

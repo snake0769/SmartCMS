@@ -1,4 +1,11 @@
+/*********************************** Layer ************************************/
+/******************************************************************************/
+var defLayerWidth = 800;
+var defLayerHeight = 500;
 
+
+/******************************** DataTables **********************************/
+/******************************************************************************/
 /**
  * 获取查询用的排序参数
  * @param data datatables请求时自带的参数
@@ -65,3 +72,12 @@ var addRowClass = function(nRow, aData, iDisplayIndex, iDisplayIndexFull){
     $(nRow).addClass('text-c');
 };
 
+/** 设置表格数据"处理中"的区块显示样式 **/
+var processingStyle = function(e, settings, processing){
+    var imgUrl = ASSET_URL + '/js/backend/lib/layer/2.1/skin/default/loading-0.gif';
+    var html = '<div class="dataTable_loading"><img src="{0}"/></div>'.format(imgUrl);
+    $('#dataTable_processing').html(html);
+};
+
+/** 表格各元素的位置排放顺序 **/
+var elementPosition = 'trip';

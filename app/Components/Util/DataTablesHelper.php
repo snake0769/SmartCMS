@@ -13,18 +13,21 @@ trait DataTablesHelper
 {
 
     /**
-     * 根据分页数据，输出专供前端DataTables组件使用的数据格式
-     * @param $data
+     * 从Model输出的分页器Pagination提出数据，并转换为前端DataTables组件所需的数据格式
+     * @param $queryParams array
+     * @param $data array
      * @return array
      */
-    public static function toResult($data){
+    public function toDataTables($queryParams,$data){
         $afterData = [];
-        $afterData['total'] = $data['total'];
+        $afterData['draw'] = !empty(isset($queryParams['draw'])) ? intval($queryParams['draw']) : 1;
+        $afterData['recordsTotal'] = $data['total'];
+        $afterData['recordsFiltered'] = $data['total'];
         $afterData['data'] = $data['items'];
-        $afterData['start'] = (intval($data['page']) - 1) / $data['perPage'];
-        $afterData['length'] = intval($data['perPage']);
+
         return $afterData;
     }
+
 
     /**
      * 分页信息转化为偏移位置信息

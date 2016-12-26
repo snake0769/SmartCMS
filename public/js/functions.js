@@ -83,7 +83,7 @@ function getQueryStringByIndex(index){
  * 获取name=item的checked input的id字符串，以','隔开
  * @returns {string}
  */
-function getCheckedInput(){
+function getCheckedInputId(){
     var ids = "";
     $("input[name=item]:checked").each(function(){
         ids += $(this).attr('id') + ",";
@@ -104,3 +104,28 @@ function isSuccessful(response){
     }
 }
 
+/**
+ * 扩展jquery方法
+ */
+$.extend({
+    /* 在url的尾部添加参数 */
+    appendUrlParams: function(url,name,value) {
+        var r = url;
+        if (r != null && r != 'undefined' && r != "") {
+            value = encodeURIComponent(value);
+            var reg = new RegExp("(^|)" + name + "=([^&]*)(|$)");
+            var tmp = name + "=" + value;
+            if (url.match(reg) != null) {
+                r = url.replace(eval(reg), tmp);
+            }
+            else {
+                if (url.match("[\?]")) {
+                    r = url + "&" + tmp;
+                } else {
+                    r = url + "?" + tmp;
+                }
+            }
+        }
+        return r;
+    }
+});

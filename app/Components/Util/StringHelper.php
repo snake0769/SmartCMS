@@ -254,4 +254,5 @@ class StringHelper
         }
         return $tmpstr;
     }
+
 }

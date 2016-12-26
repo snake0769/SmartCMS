@@ -15,6 +15,5 @@ return [
 
     'failed' => '用户名或密码错误',
     'throttle' => '登录次数过多，请稍后再试',
-    'captcha_invalid' => '验证码错误'
 
 ];

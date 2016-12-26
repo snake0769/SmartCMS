@@ -132,3 +132,23 @@
     cursor: not-allowed;
     background-color: #fff;
 }
+
+
+/*datatable '加载中' 显示样式*/
+.dataTable_loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10%;
+    background-color:rgba(125,125,125,0.2);
+    border: 1px solid rgba(125,125,125,0.1);
+    -webkit-border-radius:3px;
+    -moz-border-radius:3px;
+    border-radius:3px;
+    padding : 20px;
+    margin-left: -5%;
+    text-align: center;
+    font-size: 1.2em;
+    cursor : wait;
+    z-index: 1;
+}

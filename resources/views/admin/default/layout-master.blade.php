@@ -22,6 +22,7 @@
     <link rel="stylesheet" type="text/css" href="{{asset('js/backend/lib/icheck/icheck.css')}}" />
     <link rel="stylesheet" type="text/css" href="{{asset('js/backend/static/h-ui.admin/skin/default/skin.css')}}" id="skin" />
     <link rel="stylesheet" type="text/css" href="{{asset('js/backend/static/h-ui.admin/css/style.css')}}" />
+    <link rel="stylesheet" type="text/css" href="{{asset('css/backend/style.css')}}" />
     @yield('css')
     <!--[if IE 6]>
     <script type="text/javascript" src="{{asset('js/backend/http://lib.h-ui.net/DD_belatedPNG_0.0.8a-min.js')}}" ></script>
@@ -46,6 +47,12 @@
 <script type="text/javascript" src="{{asset('js/backend/static/h-ui/js/H-ui.js')}}"></script>
 <script type="text/javascript" src="{{asset('js/backend/static/h-ui.admin/js/H-ui.admin.js')}}"></script>
 <script type="text/javascript" src="{{asset('js/functions.js')}}"></script>
+<script type="text/javascript">
+    //此处定义全局URL变量,用于js文件内部url构建
+    var ASSET_URL = '{{asset('')}}';
+    var ROOT_URL = '{{URL::to('')}}';
+</script>
+
 <!--/_footer /作为公共模版分离出去-->
 @yield('script')
 </body>

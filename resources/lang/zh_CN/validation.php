@@ -80,6 +80,8 @@ return [
     'timezone'             => 'The :attribute must be a valid zone.',
     'unique'               => 'The :attribute has already been taken.',
     'url'                  => 'The :attribute format is invalid.',
+    //自定义校验规则
+    'like'                  => 'The :attribute and :other must match.',
 
     /*
     |--------------------------------------------------------------------------
@@ -93,8 +95,8 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'captcha' => [
+            'like' => '验证码错误',
         ],
     ],
 

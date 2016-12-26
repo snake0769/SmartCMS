@@ -7,14 +7,13 @@ use App\Models\Role;
 use App\Models\User;
 use App\Service\RoleService;
 use App\Service\UserService;
-use Illuminate\Database\QueryException;
 use Exception;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
-use \DB;
 
 /**
  * 用户控制器
@@ -23,6 +22,8 @@ use \DB;
  */
 class UsersController extends Controller
 {
+
+    use ResetsPasswords;
 
     public function test(Request $request){
         $params = $request->all();
@@ -68,7 +69,6 @@ class UsersController extends Controller
         $data = UserService::instance()->getList($params);
         $data = $this->toDataTables($params,$data);
         return responseSuccess($data);
-        //return response()->json($data);
     }
 
 
@@ -97,11 +97,16 @@ class UsersController extends Controller
             'roles'=>'required',
         ]);
 
-        UserService::instance()->save($paramters);
+        UserService::instance()->create($paramters);
         return responseSuccess();
     }
 
 
+    /**
+     * 进入编辑用户
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function toEdit(Request $request){
         $params = $this->validateAndFilter($request,[
             'id'=>'required'
@@ -111,7 +116,11 @@ class UsersController extends Controller
         return view('admin.default.admin-edit',$data);
     }
 
-
+    /**
+     * @param Request $request
+     * @return string
+     * @throws Exception
+     */
     public function edit(Request $request){
         $user = $this->validateAndFilter($request,[
             'id'=>'required',
@@ -120,66 +129,104 @@ class UsersController extends Controller
             'roles'=>''
         ]);
 
-        UserService::instance()->save($user);
+        UserService::instance()->update($user);
         return responseSuccess();
     }
 
 
-    public function destroy($id){
-        try{
-            DB::beginTransaction();
+    /**
+     * 删除用户,支持批量删除
+     * @param Request $request
+     * @return string
+     */
+    public function delete(Request $request){
+        $params = $this->validateAndFilter($request,[
+            'id'=>'required',
+        ],[
+            'id.required'=>'请选择要删除的项目'
+        ]);
 
-            isError(UserService::delete($id),true);
-
-            DB::commit();
-            return responseSuccess();
-        }catch(Exception $ex){
-            DB::rollback();
-            return responseError($ex);
-        }
+        UserService::instance()->delete($params['id']);
+        return responseSuccess();
     }
 
 
+    /**
+     * 启用或停用用户
+     * @param Request $request
+     * @return string
+     */
     public function activate(Request $request){
-        try{
-            DB::beginTransaction();
+        $params = $this->validateAndFilter($request,[
+            'id'=>'required',
+            'active'=>'required|integer|between:0,1'
+        ]);
 
-            $id = $request->get('id');
-            $active = $request->get('active');
-
-            $user = UserService::get($id);
-            if(!empty($user)){
-                if($active == "0")
-                    $rs = $user->inactivate();
-                else
-                    $rs = $user->activate();
-            }
-
-            DB::commit();
-            return responseSuccess();
-        }catch(Exception $ex){
-            DB::rollback();
-            return responseError($ex);
-        }
-
+        UserService::instance()->activate($params['id'],$params['active']);
+        return responseSuccess();
     }
 
-    public function batchDestroy(Request $request){
-        $ids = $request->get('ids');
-        if(empty($ids))
-            return responseFailed(-1,"请勾选想要删除的条目");
 
-        try{
-            DB::beginTransaction();
+    /**
+     * 进入重设密码
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function toResetPassword(Request $request){
+        $params = $this->validateAndFilter($request,[
+            'id'=>'required'
+        ]);
 
-            isError(UserService::delete($ids),true);
+        $user = UserService::instance()->get($params['id']);
+        return view('admin.default.reset-password',$user);
+    }
 
-            DB::commit();
-            return responseSuccess();
-        }catch(Exception $ex){
-            DB::rollback();
-            return responseError($ex);
-        }
+
+    /**
+     * 重设密码
+     * @param Request $request
+     * @return string
+     */
+    public function resetPassword(Request $request){
+        $params = $this->validateAndFilter($request,[
+            'id'=>'required',
+            'new_password'=>'required|same:new_password2',
+            'new_password2'=>'required'
+        ]);
+
+        UserService::instance()->resetPassword($params['id'],$params['new_password']);
+        return responseSuccess();
+    }
+
+
+    /**
+     * 进入修改密码
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function toChangePassword(Request $request){
+        $params = $this->validateAndFilter($request,[
+            'id'=>'required'
+        ]);
+
+        $user = UserService::instance()->get($params['id']);
+        return view('admin.default.change-password',$user);
+    }
+
+    /**
+     * 修改密码
+     * @param Request $request
+     * @return string
+     */
+    public function changePassword(Request $request){
+        $params = $this->validateAndFilter($request,[
+            'id'=>'required',
+            'old_password'=>'required',
+            'new_password'=>'required'
+        ]);
+
+        UserService::instance()->resetPassword($params['id'],$params['new_password'],$params['old_password']);
+        return responseSuccess();
     }
 
 }

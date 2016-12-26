@@ -11,6 +11,7 @@ namespace App\Service;
 
 use app\Components\Database\DataTablesHelper;
 use app\Components\Database\ServiceHelper;
+use app\Components\Util\StringHelper;
 use App\Exceptions\BusinessException;
 use App\Models\BaseModel;
 use App\Models\User;
@@ -51,14 +52,35 @@ abstract class Service
      * 添加或更新，更新则要求传入的model必须有id字段，基于Service实现类的baseModel。
      * 如果操作成功，则返回相应的model实例,否则返回false
      * @param array $attributes
-     * @return BaseModel|false
+     * @return boolean|int
+     * @throws BusinessException
      */
-    public function save(array $attributes){
+    public function update(array $attributes){
         //根据attributes是否包含id值，执行插入或更新操作，并称“保存”操作
         /**@var $MODEL BaseModel*/
         $MODEL = $this->baseModel;
-        $id = empty($attributes['id']) ? -1:$attributes['id'];
-        $model = $MODEL::updateOrCreate(["id"=>$id],$attributes);
+        $id = array_pull($attributes,'id');
+        unset($attributes['id']);
+        if(empty($id)){
+            throw new BusinessException('参数id为空,更新失败');
+        }
+
+        $s = $MODEL::where('id',$id)->update($attributes);
+        return $s;
+    }
+
+    /**
+     * 添加单个记录，基于Service实现类的baseModel。
+     * 如果操作成功，则返回相应的model实例,否则返回false
+     * @param array $attributes
+     * @return BaseModel|false
+     */
+    public function create(array $attributes){
+        //根据attributes是否包含id值，执行插入或更新操作，并称“保存”操作
+        /**@var $MODEL BaseModel*/
+        $MODEL = $this->baseModel;
+        $attributes['id'] = StringHelper::uuid();
+        $model = $MODEL::create($attributes);
 
         if($model === false)
             return false;
@@ -147,27 +169,35 @@ abstract class Service
 
     /**
      * 软删除指定id记录，成功则返回操作记录id，否则返回false或错误码
-     * @param string $id
-     * @return bool|null
-     * @throws BusinessException
+     * @param string|array $id
+     * @return int
+     * @throws BusinessException|\Exception
      */
     public function delete($id){
-        /**@var $MODEL BaseModel*/
-        $MODEL = $this->baseModel;
+        try {
+            \DB::beginTransaction();
 
-        if(strpos($id,',')){
-            $ids = explode(',',$id);
-            $MODEL::whereIn('id',$ids)->delete();
-        }else{
-            $model = $MODEL::find($id);
-            if(!empty($model) && !$model->trashed()){
-                $rs = $model->delete();
-                return $rs;
-            }else{
-                throw new BusinessException('指定id模型不存在');
+            /**@var $MODEL BaseModel */
+            $MODEL = $this->baseModel;
+
+            $ids = [];
+            if (is_array($id)) {
+                $ids = $id;
+            } else {
+                $ids = strpos($id, ',') !== false ? explode(',', $id) : [$id];
             }
+            if (empty($ids)) {
+                throw new BusinessException('请选择想要删除的项目');
+            }
+
+            $rs = $MODEL::whereIn('id', $ids)->delete();
+            \DB::commit();
+        } catch (\Exception $ex) {
+            \DB::rollback();
+            throw $ex;
         }
 
+        return $rs;
     }
 
 }
