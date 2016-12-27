@@ -4,6 +4,7 @@ namespace App\Models;
 
 use app\Components\Database\ModelHelper;
 use app\Components\Database\QueryBuilder;
+use App\Exceptions\BusinessException;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -100,10 +101,9 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     /**
      * 判断用户是否具有某个角色,传入Collection、Role Id字符串或数组
      * @param Collection|string $roles
-     * @param boolean $perfectMatch 是否需要完全匹配
      * @return bool
      */
-    public function hasRole($roles, $perfect=true, $field='id')
+    public function hasRole($roles,$field='id')
     {
         //传入Role （默认）Id字符串或数组
         if (is_string($roles) || is_int($roles) ){
@@ -112,9 +112,9 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         //传入Role （默认）id数组或传入Collection
         elseif( (is_array($roles) && count($roles)> 0) || ($roles instanceof Collection && $roles->count()>0) ){
             foreach($roles as $role){
-                $value = ($roles instanceof Collection && $roles->count()>0) ? $role->$field:$role;
+                $value = ($roles instanceof Collection && $roles->count()>0) ? $role->id:$role;
 
-                if($perfect  && $roles->count()>1){
+                if($roles->count()>1){
                     if( !$this->roles->contains($field, $value) )
                         return false;
                 }else{
@@ -132,44 +132,33 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
 
 
     /**
-     * 判断用户是否具有某个角色,传入Collection、Permission Id字符串或数组
-     * @param $permissions
-     * @param string $field 指明传入的值对应id或name字段
+     * 判断用户是否具有指定权限,可以指定多个权限
+     * @param $permissions string|Permission[]|Collection Permission名称或id、Permission数组
+     * @param $field string 表明传入的权限属性
      * @return bool
+     * @throws BusinessException
      */
-    public function hasPermission($permissions, $perfect=true, $field='id')
+    public function hasPermission($permissions,$field='id')
     {
         $PERMISSION = \Map::getClass(Permission::class,self::class);
-        //传入Permission (默认)Id字符串或数组
-        if(is_string($permissions) || is_int($permissions)){
-            $permission = $PERMISSION::where($field,$permissions)->first();
-            if(!empty($permission)){
-                return $this->hasRole($permission->roles,false,$field);
+
+        //把各种类型$permissions参数,统一转换获得Permission数组
+        if(!is_array($permissions)){
+            if(is_string($permissions)){
+                $permissions = $PERMISSION::with('roles')->where($field,$permissions)->get();
+            }else{
+                $permissions = [$permissions];
             }
-            else
+        }elseif(is_array($permissions) && count($permissions) >0 && is_string($permissions[0])){
+            $permissions = $PERMISSION::with('roles')->whereIn($field,$permissions)->get();
+        }
+
+        foreach ($permissions as $permission) {
+            if (!$this->hasRole($permission->roles, $field))
                 return false;
         }
-        //传入Permission (默认)Ids数组或Collection
-        elseif( (is_array($permissions) && count($permissions)> 0) || ($permissions instanceof Collection && $permissions->count()>0)){
-            foreach($permissions as $permission){
-                $value = ($permissions instanceof Collection && $permissions->count()>0) ? $permission->$field:$permission;
-                $permission = $PERMISSION::where($field,$value)->first();
 
-                if(!empty($permission)){
-                    if($perfect && $permissions->count()>1){
-                        if( !$this->hasRole($permission->roles,false,$field) )
-                            return false;
-                    }else{
-                        if( $this->hasRole($permission->roles,false,$field) )
-                            return true;
-                    }
-                }
-
-            }
-
-        }
-
-        return false;
+        return true;
     }
 
     /**
@@ -230,6 +219,14 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         }
         $this->password = bcrypt($password);
         return $this->update();
+    }
+
+    /**
+     * 是否超级用户
+     * @return bool
+     */
+    public function isSuperUser(){
+        return boolval($this->is_super);
     }
 
 }

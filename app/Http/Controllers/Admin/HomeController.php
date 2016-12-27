@@ -54,6 +54,7 @@ class HomeController extends Controller
     function postClear(){
         \Cache::forget('admin.menu');
         \Cache::forget('admin.permission');
+        \Cache::forget('admin.permissionForMenu');
         return responseSuccess();
     }
 

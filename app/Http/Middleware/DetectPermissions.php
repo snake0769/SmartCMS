@@ -9,8 +9,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Exceptions\Error;
+use App\Models\Action;
 use App\Models\RequestUrl;
+use App\Models\User;
 use Closure;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,10 +22,33 @@ class DetectPermissions
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
-     * @param  string|null  $guard
      * @return mixed
      */
     public function handle($request, Closure $next)
+    {
+        $actionName = $request->route()->getActionName();
+        $action = Action::where('action',$actionName)->first();
+
+
+        //超级用户直接开放权限
+        \Gate::before(function($user){
+            /** @var $user User */
+            if($user->isSuperUser()){
+                return true;
+            }
+        });
+
+        if(\Gate::denies($action->permission)){
+            if($request->wantsJson()){
+                return  response()->json('权限不足');
+            }else{
+                return response()->view('admin.default.401');
+            }
+        }
+
+        return $next($request);
+    }
+    /*public function handle($request, Closure $next)
     {
         $path = $request->route()->getPath();
         $method = $request->route()->getMethods();
@@ -35,7 +59,7 @@ class DetectPermissions
             $user = Auth::user();
             if( !$user->hasPermission($requestUrl->permission,false,'name')){
                 if($request->wantsJson()){
-                   return  response()->json(Error::BUSSINESS_PERMISSION_DENIED);
+                   return  response()->json('权限不足');
                 }else{
                     return response()->view('admin.default.401');
                 }
@@ -43,5 +67,5 @@ class DetectPermissions
         }
 
         return $next($request);
-    }
+    }*/
 }

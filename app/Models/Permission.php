@@ -3,11 +3,16 @@
 namespace App\Models;
 
 
-use App\Foundation\Facades\Map;
 use Illuminate\Support\Facades\Cache;
 
 class Permission extends BaseModel
 {
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class,"permission_role");
+    }
+
 
     /**
      * 查找root权限id
@@ -27,13 +32,14 @@ class Permission extends BaseModel
     }
 
     /**
-     * 获取所有权限
-     * @param boolean $sort
+     * 获取所有权限,用于菜单显示
+     * @return Permission[]
      */
-    public static function getPermissions(){
-        return Cache::rememberForever('admin.permission', function(){
-            $PERMISSION = Map::model('Permission');
+    public static function allForMenu(){
+        return \Cache::rememberForever('admin.permissionForMenu', function(){
+            $PERMISSION = \Map::getClass(Permission::class);
 
+            /** @var Permission $PERMISSION $permissions */
             $permissions = $PERMISSION::orderBy('layer','asc')->orderBy('pid','asc')->get();
 
             $sortPermissions = [];
@@ -79,9 +85,17 @@ class Permission extends BaseModel
     }
 
 
-    public function roles()
+    /**
+     * 获取所有权限
+     * @return Permission[]
+     */
+    public static function getAll()
     {
-        return $this->belongsToMany(Role::class,"permission_role");
+        return \Cache::rememberForever('admin.permission', function(){
+            /** @var Permission $PERMISSION */
+            $PERMISSION = \Map::getClass(Permission::class);
+            return $PERMISSION::all();
+        });
     }
 
 }

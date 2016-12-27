@@ -67,7 +67,7 @@ class SystemConfigService extends Service
         $accessMenus = [];
         //menus数据集本身已经按照layer顺序排列
         foreach($menus as $menu){
-            if($user->hasPermission($menu->permission,false,'name')){
+            if($user->hasPermission($menu->permission,'name')){
                 switch($menu->layer){
                     case 1:
                         $lv1Pms = &$accessMenus[$menu->id];

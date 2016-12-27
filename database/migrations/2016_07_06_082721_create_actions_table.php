@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateRequestUrlsTable extends Migration
+class CreateActionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,15 +12,13 @@ class CreateRequestUrlsTable extends Migration
      */
     public function up()
     {
-        Schema::create('request_urls', function (Blueprint $table) {
+        Schema::create('actions', function (Blueprint $table) {
             $table->string('id')->unique();
             $table->primary('id');
-            $table->string('url');
-            $table->string('name');
-            $table->string('method')->default('get');
+            $table->string('action');
             $table->string('permission');
+            $table->tinyInteger('only_own')->default(0);
             $table->timestamps();
-            $table->index(['url','method']);
         });
     }
 
@@ -31,6 +29,6 @@ class CreateRequestUrlsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('request_urls');
+        Schema::drop('actions');
     }
 }
