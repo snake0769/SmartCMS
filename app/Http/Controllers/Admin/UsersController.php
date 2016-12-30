@@ -25,24 +25,6 @@ class UsersController extends Controller
 
     use ResetsPasswords;
 
-    public function test(Request $request){
-        $params = $request->all();
-        $data = [
-            'draw'=>1,
-            'recordsTotal'=>5,
-            'recordsFiltered'=>5,
-            'data'=>[
-                'data'=> [
-                ['id'=>1,'username'=>'snake','nickname'=>'snake','roles'=>'admin','created_at'=>'2016-12-14','active'=>1],
-                ['id'=>2,'username'=>'snake1','nickname'=>'snake1','roles'=>'admin1','created_at'=>'2016-12-14','active'=>1],
-                ['id'=>3,'username'=>'snake2','nickname'=>'snake2','roles'=>'admin2','created_at'=>'2016-12-14','active'=>1]
-                ]
-            ]
-        ];
-
-        return response()->json($data);
-    }
-
     /**
      * 进入用户列表
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
@@ -112,8 +94,8 @@ class UsersController extends Controller
             'id'=>'required'
         ]);
 
-        $data = UserService::instance()->get($params['id']);
-        return view('admin.default.admin-edit',$data);
+        $user = UserService::instance()->get($params['id']);
+        return view('admin.default.admin-edit',$user);
     }
 
     /**

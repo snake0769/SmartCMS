@@ -12,7 +12,7 @@
 			</div>
 		</div>
 		<div class="row cl">
-			<label class="form-label col-xs-4 col-sm-3">备注标签：</label>
+			<label class="form-label col-xs-4 col-sm-3">描述：</label>
 			<div class="formControls col-xs-8 col-sm-9">
 				<input type="text" class="input-text" value="" placeholder="" id="description" name="description">
 			</div>
@@ -93,6 +93,7 @@ $(function(){
 		focusCleanup:true,
 		success:"valid",
 		submitHandler:function(form){
+			var loadingIndex = parent.layer.load(1, {shade: [0.3, '#000']});//加入遮罩效果
 			var name = $('#name').val();
 			var description = $('#description').val();
 			var div = $('#div-permissions ');
@@ -105,21 +106,23 @@ $(function(){
 
 			$.ajax({
 				type: 'POST',
-				url: "{{URL::to('/admin/roles')}}" ,
+				url: "{{URL::to('/admin/roles/create')}}" ,
 				data: {_token:'{!! csrf_token() !!}',name:name,description:description,permissions:permissions} ,
-				success: function(result){
-					if(result.errcode == 0){
-						alert("操作成功！");
-						var index = parent.layer.getFrameIndex(window.name);
-						parent.$('.btn-refresh').click();
-						parent.layer.close(index);
+				success: function(response){
+					parent.layer.close(loadingIndex);
+					if(isSuccessful(response)){
+						parent.layer.msg('操作成功!', {icon: 1, time: 1000},function(){
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+						parent.reload();
 					}else{
-						alert(result.msg);
+						parent.layer.alert(response.msg, {icon: 2});
 					}
 
 				},
-				error: function(){
-					alert('网络异常');
+				error: function () {
+					parent.layer.close(loadingIndex);
+					parent.layer.alert('系统异常', {icon: 2});
 				}
 			});
 

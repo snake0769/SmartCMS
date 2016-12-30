@@ -100,32 +100,31 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
 
     /**
      * 判断用户是否具有某个角色,传入Collection、Role Id字符串或数组
-     * @param Collection|string $roles
+     * @param $roles string|Permission[]|Collection Role name或id、Role数组
+     * @param $perfectMatch boolean 指定传入的权限是否要完全匹配
+     * @param $field string 表名传入的Role字段
      * @return bool
      */
-    public function hasRole($roles,$field='id')
+    public function hasRole($roles, $perfectMatch=true, $field = 'id')
     {
-        //传入Role （默认）Id字符串或数组
-        if (is_string($roles) || is_int($roles) ){
+
+        if (is_string($roles) || is_int($roles)) {
             return $this->roles->contains($field, $roles);
         }
-        //传入Role （默认）id数组或传入Collection
-        elseif( (is_array($roles) && count($roles)> 0) || ($roles instanceof Collection && $roles->count()>0) ){
-            foreach($roles as $role){
-                $value = ($roles instanceof Collection && $roles->count()>0) ? $role->id:$role;
-
-                if($roles->count()>1){
+        elseif ((is_array($roles) && count($roles) > 0) || ($roles instanceof Collection && $roles->count() > 0)) {
+            foreach ($roles as $role) {
+                $value = ($roles instanceof Collection && $roles->count() > 0) ? $role->$field : $role;
+                if($perfectMatch  && $roles->count()>1){
                     if( !$this->roles->contains($field, $value) )
                         return false;
                 }else{
                     if( $this->roles->contains($field, $value) )
                         return true;
                 }
-
             }
         }
 
-        return false;
+        return true;
 
     }
 
@@ -133,12 +132,13 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
 
     /**
      * 判断用户是否具有指定权限,可以指定多个权限
-     * @param $permissions string|Permission[]|Collection Permission名称或id、Permission数组
+     * @param $permissions string|Permission[]|Collection Permission name或id、Permission数组
+     * @param $perfectMatch boolean 指定传入的权限是否要完全匹配
      * @param $field string 表明传入的权限属性
      * @return bool
      * @throws BusinessException
      */
-    public function hasPermission($permissions,$field='id')
+    public function hasPermission($permissions,$perfectMatch=true,$field='id')
     {
         $PERMISSION = \Map::getClass(Permission::class,self::class);
 
@@ -154,39 +154,32 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         }
 
         foreach ($permissions as $permission) {
-            if (!$this->hasRole($permission->roles, $field))
-                return false;
+            if($perfectMatch){
+                if( !$this->hasRole($permission->roles,false,$field) )
+                    return false;
+            }else{
+                if( $this->hasRole($permission->roles,false,$field) )
+                    return true;
+            }
         }
 
         return true;
     }
 
     /**
-     * 给用户分配角色，传入Role Id字符串或数组
-     * @param string|array $roles
+     * 给用户分配角色
+     * @param string|array $roles 角色id数组
      * @return User
      */
     public function assignRoles($roles)
     {
-        $ROLE = \Map::getClass(Role::class,self::class);
-        //传入Role id字符串
+        //如果传入Role id字符串,转化为数组
         if(is_string($roles) || is_int($roles)){
-            if( !$this->hasRole($roles) ){
-                $this->roles()->save(
-                    $ROLE::whereIn('id',$roles)->firstOrFail()
-                );
-            }
+            $roles = explode(',',$roles);
         }
-        //传入Role id数组
-        elseif(is_array($roles) && count($roles) > 0){
-            //重新分配角色
-            foreach($roles as $roleId){
-                if( !$this->hasRole($roleId) ){
-                    $this->roles()->save(
-                        $ROLE::where('id',$roleId)->firstOrFail()
-                    );
-                }
-            }
+        //分配角色
+        if(is_array($roles)){
+            $this->roles()->attach($roles);
         }
 
         return $this;

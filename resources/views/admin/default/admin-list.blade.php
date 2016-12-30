@@ -30,7 +30,7 @@
 				<th width="120">登录名</th>
 				<th width="120">昵称</th>
 				<th width="120">角色</th>
-				<th width="120">加入时间</th>
+				<th width="120">创建时间</th>
 				<th width="80">状态</th>
 				<th width="100">操作</th>
 			</tr>
@@ -45,7 +45,7 @@
 @section('script')
 <script type="text/javascript" src="{{asset('js/backend/lib/My97DatePicker/WdatePicker.js')}}"></script>
 <script type="text/javascript" src="{{asset('js/backend/lib/datatables/1.10.0/jquery.dataTables.min.js')}}"></script>
-<script type="text/javascript" src="{{asset('js/backend/static/default/component-helpers.js')}}?2016122001"></script>
+<script type="text/javascript" src="{{asset('js/backend/static/default/component-helpers.js')}}"></script>
 
 <script type="text/javascript">
 
@@ -204,7 +204,7 @@
 				success: function(response){
 					layer.close(loadingIndex);
 					if(isSuccessful(response)){
-						layer.msg('操作成功!', {icon: 5, time: 1000},function(){
+						layer.msg('操作成功!', {icon: 1, time: 1000},function(){
 							reload();
 							layer.close(index);
 						});
@@ -241,7 +241,7 @@
 				success: function(response){
 					layer.close(loadingIndex);
 					if(isSuccessful(response)){
-						layer.msg('操作成功!', {icon: 5, time: 1000},function(){
+						layer.msg('操作成功!', {icon: 1, time: 1000},function(){
 							layer.close(index);
 						});
 						reload();
@@ -271,7 +271,7 @@
 				success: function(response){
 					layer.close(loadingIndex);
 					if(isSuccessful(response)){
-						layer.msg('操作成功!', {icon: 5, time: 1000},function(){
+						layer.msg('操作成功!', {icon: 1, time: 1000},function(){
 							layer.close(index);
 						});
 						reload();

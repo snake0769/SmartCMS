@@ -3,22 +3,23 @@
 namespace App\Models;
 
 
+use app\Components\Database\QueryBuilder;
 use App\Foundation\Facades\Map;
 use Illuminate\Database\Eloquent\Collection;
 
 class Role extends BaseModel
 {
 
-    protected $fillable = ["name","label"];
+    protected $fillable = ["id","name","label","description"];
 
 
     public function users(){
-        return $this->belongsToMany(User::class,"role_user");
+        return $this->belongsToMany(User::class,"role_user",'role_id','user_id');
     }
 
     public function permissions()
     {
-        return $this->belongsToMany(Permission::class,"permission_role");
+        return $this->belongsToMany(Permission::class,"permission_role",'role_id','permission_id');
     }
 
     /**
@@ -28,26 +29,12 @@ class Role extends BaseModel
      */
     public function assignPermissions($permissions)
     {
-        $PERMISSION = Map::model('Permission');
-
-        //传入permission id字符串
         if(is_string($permissions) || is_int($permissions)){
-            if( !$this->hasPermission($permissions) ){
-                $this->permissions()->save(
-                    $PERMISSION::whereIn('id',$permissions)->firstOrFail()
-                );
-            }
+            $permissions = explode(',',$permissions);
         }
-        //传入permission id数组
-        elseif(is_array($permissions) && count($permissions) > 0){
-            //重新分配角色
-            foreach($permissions as $permissionId){
-                if( !$this->hasPermission($permissionId) ){
-                    $this->permissions()->save(
-                        $PERMISSION::where('id',$permissionId)->firstOrFail()
-                    );
-                }
-            }
+        //分配权限
+        if(is_array($permissions)){
+            $this->permissions()->attach($permissions);
         }
     }
 
@@ -96,5 +83,54 @@ class Role extends BaseModel
     }
 
 
+    /**
+     * 搜索角色列表
+     * @param $params
+     * @param $page
+     * @param $perPage
+     * @return array
+     */
+    public static function getList($params,$page,$perPage=20){
+        $cols = ['id','name','label','description','created_at'];
+
+        /** @var $query QueryBuilder*/
+        $query = self::with(['users'=>['id','username','nickname']]);
+        if(!array_value_empty('start_date',$params)){
+            $query->where('created_at','>=',$params['start_date']);
+        }
+        if(!array_value_empty('end_date',$params)){
+            $query->where('created_at','<=',$params['end_date']);
+        }
+
+        //登录名、昵称作为关键字查找
+        if(!array_value_empty('keyword',$params)){
+            $query->where('name','like','%'.$params['keyword'].'%');
+        }
+
+        if(array_key_exists('order',$params)){
+            $query->order($params['order']);
+        }
+
+        $total = $query->count();
+        $items = $query->paginate($perPage,$cols,'page',$page)->items();
+
+        return ['total'=>$total,'items'=>$items,'page'=>$page,'perPage'=>$perPage];
+    }
+
+    /**
+     * 判断角色是否有用户归属
+     * @param $id string|array 单个角色id传入string,多个角色id传入数组
+     * @return array|false 如果没有归属,返回false,否则返回归属信息数组
+     */
+    public static function belongToUser($id){
+        if(!is_array($id)){
+            $id = [$id];
+        }
+
+        $query = \DB::table('role_user');
+        $result = $query->whereIn('role_id',$id)->get();
+
+        return empty($result) ? false : $result;
+    }
 
 }

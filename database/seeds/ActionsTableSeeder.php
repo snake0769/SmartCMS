@@ -135,6 +135,55 @@ class ActionsTableSeeder extends Seeder
     }
 
     private function genRoles(&$data){
+        $data[] = [
+            'id' => \app\Components\Util\StringHelper::uuid(),
+            'action' => \App\Http\Controllers\Admin\RolesController::class.'@toList',
+            'permission' => 'admin.roles.show',
+            'only_own' => 0,
+        ];
+        $data[] = [
+            'id' => \app\Components\Util\StringHelper::uuid(),
+            'action' => \App\Http\Controllers\Admin\RolesController::class.'@getList',
+            'permission' => 'admin.roles.show',
+            'only_own' => 0,
+        ];
+        $data[] = [
+            'id' => \app\Components\Util\StringHelper::uuid(),
+            'action' => \App\Http\Controllers\Admin\RolesController::class.'@toCreate',
+            'permission' => 'admin.roles.create',
+            'only_own' => 0,
+        ];
+        $data[] = [
+            'id' => \app\Components\Util\StringHelper::uuid(),
+            'action' => \App\Http\Controllers\Admin\RolesController::class.'@create',
+            'permission' => 'admin.roles.create',
+            'only_own' => 0,
+        ];
+        $data[] = [
+            'id' => \app\Components\Util\StringHelper::uuid(),
+            'action' => \App\Http\Controllers\Admin\RolesController::class.'@toEdit',
+            'permission' => 'admin.roles.show',
+            'only_own' => 0,
+        ];
+        $data[] = [
+            'id' => \app\Components\Util\StringHelper::uuid(),
+            'action' => \App\Http\Controllers\Admin\RolesController::class.'@toEdit',
+            'permission' => 'admin.roles.edit',
+            'only_own' => 0,
+        ];
+        $data[] = [
+            'id' => \app\Components\Util\StringHelper::uuid(),
+            'action' => \App\Http\Controllers\Admin\RolesController::class.'@edit',
+            'permission' => 'admin.roles.edit',
+            'only_own' => 0,
+        ];
+        $data[] = [
+            'id' => \app\Components\Util\StringHelper::uuid(),
+            'action' => \App\Http\Controllers\Admin\RolesController::class.'@delete',
+            'permission' => 'admin.roles.delete',
+            'only_own' => 0,
+        ];
+
         $this->fillDefault($data);
     }
 

@@ -16,7 +16,17 @@ abstract class BaseModel extends Model
      */
     protected $keyType = 'string';
 
+    /**
+     * 默认每页记录数
+     * @var int
+     */
     protected $perPage = 20;
+
+    /**
+     * 默认数据表主键是否自增
+     * @var bool
+     */
+    public $incrementing = false;
 
     use QuickQuery,ModelHelper;
 

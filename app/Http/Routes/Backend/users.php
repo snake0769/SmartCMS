@@ -5,14 +5,13 @@
  * Date: 2016/12/12
  * Time: 18:15
  */
-
 Route::group(['middleware'=>'auth.permission'],function(){
 
     Route::get('users/to_list',['uses'=>'Admin\\UsersController@toList']);
 
     Route::get('users/list',['uses'=>'Admin\\UsersController@getList']);
 
-    Route::get('users/to_create',['as'=>'admin.users.create','uses'=>'Admin\\UsersController@toCreate']);
+    Route::get('users/to_create',['uses'=>'Admin\\UsersController@toCreate']);
 
     Route::post('users/create',['uses'=>'Admin\\UsersController@create']);
 
@@ -34,6 +33,5 @@ Route::group(['middleware'=>'auth.permission'],function(){
 
     Route::post('users/change_password',['uses'=>'Admin\\UsersController@changePassword']);
 
-    Route::get('users/test',['uses'=>'Admin\\UsersController@test']);
 
 });

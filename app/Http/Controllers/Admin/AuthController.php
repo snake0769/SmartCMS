@@ -27,9 +27,7 @@ class AuthController extends Controller
     |
     */
 
-    use AuthenticatesAndRegistersUsers, ThrottlesLogins, CaptchaValidation{
-        CaptchaValidation::validateLogin insteadof AuthenticatesAndRegistersUsers;
-    }
+    use AuthenticatesAndRegistersUsers, ThrottlesLogins;
 
 
     /**

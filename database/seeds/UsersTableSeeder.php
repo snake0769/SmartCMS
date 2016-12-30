@@ -18,6 +18,7 @@ class UsersTableSeeder extends Seeder
             "nickName" => "admin",
             "email" => "admin@admin.com",
             "password" => bcrypt("123456"),
+            'is_super'=>1,
             "created_at" => Carbon::now()->toDateTimeString(),
             "updated_at" => Carbon::now()->toDateTimeString()
         ];

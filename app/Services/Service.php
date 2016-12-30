@@ -25,7 +25,7 @@ abstract class Service
 {
     use DataTablesHelper;
 
-    /** 与服务关联的BaseModel类 */
+    /** @var $baseModel BaseModel 与服务关联的BaseModel类 */
     protected $baseModel;
     /** @var array 服务子类唯一实例存储数组 */
     protected static $instances = [];

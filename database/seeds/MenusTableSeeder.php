@@ -32,12 +32,12 @@ class MenusTableSeeder extends Seeder
             "created_at" => Carbon::now()->toDateTimeString(),
             "updated_at" => Carbon::now()->toDateTimeString()
         ];
-        $datas[] = [
+        /*$datas[] = [
             "id" =>\app\Components\Util\StringHelper::uuid(),
             "title" => "权限管理","icon" => "","sort" => 3,"layer" => 2,"pid" => $id,"permission" => "admin.permissions.index","url" => "/admin/permissions/to_list",
             "created_at" => Carbon::now()->toDateTimeString(),
             "updated_at" => Carbon::now()->toDateTimeString()
-        ];
+        ];*/
 
         //系统管理
         $id = \app\Components\Util\StringHelper::uuid();

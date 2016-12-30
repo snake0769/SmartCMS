@@ -42,11 +42,11 @@
           <input id="password" name="password" type="password" placeholder="密码" class="input-text size-L">
         </div>
       </div>
-      <div class="row cl">
+      {{--<div class="row cl">
         <div class="formControls col-xs-8 col-xs-offset-3">
           <input id="captcha" name="captcha" class="input-text size-L" type="text" placeholder="验证码" onblur="if(this.value==''){this.value=''}" onclick="if(this.value==''){this.value='';}" value="" style="width:150px;">
           <a id="kanbuq" href="javascript:;" onclick="javascript:refreshCaptacha();"><img id="captchaImg" src="{{URL::to('/admin/auth/captcha')}}" > 看不清，换一张</a> </div>
-      </div>
+      </div>--}}
       @if (count($errors) > 0)
         <div class="loginErrBox">
           <strong>登录失败：</strong>{{ $errors->all()[0] }}<br>

@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\Cache;
 class Permission extends BaseModel
 {
 
+    public $incrementing = true;
+
     public function roles()
     {
-        return $this->belongsToMany(Role::class,"permission_role");
+        return $this->belongsToMany(Role::class,"permission_role",'permission_id','role_id');
     }
 
 
@@ -32,10 +34,10 @@ class Permission extends BaseModel
     }
 
     /**
-     * 获取所有权限,用于菜单显示
+     * 获取所有权限,权限经过格式整理,以层级方式呈现
      * @return Permission[]
      */
-    public static function allForMenu(){
+    public static function getAllWithLayer(){
         return \Cache::rememberForever('admin.permissionForMenu', function(){
             $PERMISSION = \Map::getClass(Permission::class);
 

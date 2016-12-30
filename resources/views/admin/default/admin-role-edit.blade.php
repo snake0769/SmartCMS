@@ -5,16 +5,17 @@
 @section('content')
 <article class="page-container">
 	<form action="" method="post" class="form form-horizontal" id="form-admin-role-edit">
+		<input type="text" class="input-text" value="{{$role['id']}}" id="id" name="id" hidden>
 		<div class="row cl">
 			<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>角色名称：</label>
 			<div class="formControls col-xs-8 col-sm-9">
-				<input type="text" class="input-text" value="" placeholder="" id="name" name="name" datatype="*4-16" nullmsg="角色名称不能为空">
+				<input type="text" class="input-text" value="{{$role['name']}}" placeholder="" id="name" name="name" datatype="*4-16" nullmsg="角色名称不能为空">
 			</div>
 		</div>
 		<div class="row cl">
-			<label class="form-label col-xs-4 col-sm-3">备注标签：</label>
+			<label class="form-label col-xs-4 col-sm-3">描述：</label>
 			<div class="formControls col-xs-8 col-sm-9">
-				<input type="text" class="input-text" value="" placeholder="" id="description" name="description">
+				<input type="text" class="input-text" value="{{$role['description']}}" placeholder="" id="description" name="description">
 			</div>
 		</div>
 		<div class="row cl">
@@ -24,7 +25,8 @@
 				<dl class="permission-list">
 					<dt>
 						<label>
-							<input type="checkbox" value="{{$permission1['permission']['id']}}" name="{{$permission1['permission']['name']}}" id="{{$permission1['permission']['name']}}">
+							<input type="checkbox" value="{{$permission1['permission']['id']}}" name="{{$permission1['permission']['name']}}" id="{{$permission1['permission']['name']}}"
+							@if(\App\Models\BaseModel::contains($role['permissions'],'id',$permission1['permission']['id'])) @endif>
 							{{$permission1['permission']['label']}}</label>
 					</dt>
 					<dd>
@@ -32,13 +34,15 @@
 						<dl class="cl permission-list2">
 							<dt>
 								<label class="">
-									<input type="checkbox" value="{{$permission2['permission']['id']}}" name="{{$permission2['permission']['name']}}" id="{{$permission2['permission']['name']}}">
+									<input type="checkbox" value="{{$permission2['permission']['id']}}" name="{{$permission2['permission']['name']}}" id="{{$permission2['permission']['name']}}"
+										   @if(\App\Models\BaseModel::contains($role['permissions'],'id',$permission1['permission']['id'])) @endif>
 									{{$permission2['permission']['label']}}</label>
 							</dt>
 							<dd>
 								@foreach($permission2['childPermissions'] as $permission3)
 								<label class="">
-									<input type="checkbox" value="{{$permission3['permission']['id']}}" name="{{$permission3['permission']['name']}}" id="{{$permission3['permission']['name']}}">
+									<input type="checkbox" value="{{$permission3['permission']['id']}}" name="{{$permission3['permission']['name']}}" id="{{$permission3['permission']['name']}}"
+										   @if(\App\Models\BaseModel::contains($role['permissions'],'id',$permission1['permission']['id'])) checked="checked"@endif>
 									{{$permission3['permission']['label']}}</label>
 									@endforeach
 							</dd>
@@ -86,13 +90,15 @@ $(function(){
 	$("#form-admin-role-edit").validate({
 		rules:{
 			roleName:{
-				required:true,
-			},
+				required:true
+			}
 		},
 		onkeyup:false,
 		focusCleanup:true,
 		success:"valid",
 		submitHandler:function(form){
+			var loadingIndex = parent.layer.load(1, {shade: [0.3, '#000']});//加入遮罩效果
+			var id = $('#id').val();
 			var name = $('#name').val();
 			var description = $('#description').val();
 			var div = $('#div-permissions ');
@@ -105,21 +111,23 @@ $(function(){
 
 			$.ajax({
 				type: 'POST',
-				url: "{{URL::to('/admin/roles').'/'.$id}}" ,
-				data: {_token:'{!! csrf_token() !!}',name:name,description:description,permissions:permissions} ,
-				success: function(result){
-					if(result.errcode == 0){
-						alert("操作成功！");
-						var index = parent.layer.getFrameIndex(window.name);
-						parent.$('.btn-refresh').click();
-						parent.layer.close(index);
+				url: "{{URL::to('/admin/roles/edit')}}" ,
+				data: {_token:'{!! csrf_token() !!}',id:id,name:name,description:description,permissions:permissions} ,
+				success: function(response){
+					parent.layer.close(loadingIndex);
+					if(isSuccessful(response)){
+						parent.layer.msg('操作成功!', {icon: 1, time: 1000},function(){
+							parent.layer.close(parent.layer.getFrameIndex(window.name));
+						});
+						parent.reload();
 					}else{
-						alert(result.msg);
+						parent.layer.alert(response.msg, {icon: 2});
 					}
 
 				},
-				error: function(){
-					alert('网络异常');
+				error: function () {
+					parent.layer.close(loadingIndex);
+					parent.layer.alert('系统异常', {icon: 2});
 				}
 			});
 

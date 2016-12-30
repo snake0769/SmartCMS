@@ -10,6 +10,8 @@ namespace app\Components\Database;
 
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 trait ModelHelper
 {
@@ -46,5 +48,27 @@ trait ModelHelper
         return static::table().'.'.$column;
     }
 
+    /**
+     * 判断数组或集合内是否包含指定字段值的元素
+     * @param $models array|Collection model数组或集合,其结构必须为key-value
+     * @param $field string 指定字段
+     * @param $value mixed 指定字段值
+     * @return boolean
+     */
+    public static function contains($models,$field,$value){
+        if(is_array($models) || $models instanceof Collection){
+            foreach($models as $model){
+                if($model instanceof Model){
+                    $model = $model->toArray();
+                }
+
+                if(array_key_exists($field,$model) && $model[$field] == $value){
+                    return true;
+                }
+            }
+        }else{
+            return false;
+        }
+    }
 
 }

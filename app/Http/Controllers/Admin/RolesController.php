@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Foundation\Facades\Map;
 use App\Models\Permission;
+use App\Service\PermissionService;
 use App\Service\RoleService;
 use App\Service\UserService;
 use Illuminate\Http\Request;
@@ -22,145 +23,112 @@ use Exception;
 class RolesController extends Controller
 {
 
-    public function index(Request $request)
-    {
-        $paramters = $request->all();
-        if (isset($paramters['page']))
-            $page = array_pull($paramters, 'page');
-        else
-            $page = 1;
-
-        $query = RoleService::buildQuery("users", $paramters, ['*'], ['id' => 'asc']);
-        $roles = $this->paginate($query, $page);
-        $data['roles'] = $roles;
-        return view('admin.default.admin-role', $data);
+    /**
+     * 进入角色列表
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function toList(){
+        return view('admin.default.admin-role');
     }
 
+    /**
+     * 获取角色列表
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function getList(Request $request){
+        $params = $this->validateAndFilter($request,[
+            'start_date'=>'date',
+            'end_date'=>'date',
+            'keyword'=>'',
+            'order'=>'json',
+            'draw'=>'',
+            'start'=>'integer|min:0',
+            'length'=>'integer|min:1'
+        ]);
+        $data = RoleService::instance()->getList($params);
+        $data = $this->toDataTables($params,$data);
+        return responseSuccess($data);
+    }
 
-    public function create()
+    /**
+     * 进入添加角色
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function toCreate()
     {
-        $PERMISSION = Map::model('Permission');
-        $permissions = $PERMISSION::getPermissions();
+        $permissions = PermissionService::instance()->getAllWithLayer();
         $datas['permissions'] = $permissions;
         return view('admin.default.admin-role-add',$datas);
 
     }
 
 
-    public function store()
-    {
+    /**
+     * 添加用户
+     * @param Request $request
+     * @return string
+     * @throws Exception
+     */
+    public function create(Request $request){
+        $paramters = $this->validateAndFilter($request,[
+            'name'=>'required',
+            'description'=>'',
+            'permissions'=>''
+        ]);
 
-        try {
-            DB::beginTransaction();
-
-            DB::enableQueryLog();
-            $params = Input::except(['admin-role-save','_token']);
-            isError(RoleService::save($params), true);
-
-            DB::commit();
-            return responseSuccess();
-        } catch (Exception $ex) {
-            DB::rollback();
-            return responseError($ex);
-        }
-
+        RoleService::instance()->create($paramters);
+        return responseSuccess();
     }
 
 
-    public function show($id)
+    /**
+     * 进入编辑角色
+     * @param Request $request
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function toEdit(Request $request)
     {
-        $user = UserService::get($id, "roles");
-        $roles = RoleService::get();
-        $data['user'] = $user->toArray();
-        $data['roles'] = $roles->toArray();
-        return view('admin.default.admin-edit', $data);
+        $params = $this->validateAndFilter($request,[
+            'id'=>'required'
+        ]);
+        $role = RoleService::instance()->get($params['id']);
+        return view('admin.default.admin-role-edit', $role);
+    }
+
+    /**
+     * 编辑角色
+     * @param Request $request
+     * @return string
+     * @throws Exception
+     */
+    public function edit(Request $request)
+    {
+        $role = $this->validateAndFilter($request,[
+            'id'=>'required',
+            'name'=>'required',
+            'description'=>'',
+            'permissions'=>''
+        ]);
+
+        RoleService::instance()->update($role);
+        return responseSuccess();
     }
 
 
-    public function edit($id)
-    {
-        /*$user = UserService::get($id,"roles");
-        $roles = RoleService::get();
-        $data['user'] = $user->toArray();
-        $data['roles'] = $roles->toArray();*/
-        return view('admin.default.admin-role-add');
-    }
+    /**
+     * 删除用户,支持批量删除
+     * @param Request $request
+     * @return string
+     */
+    public function delete(Request $request){
+        $params = $this->validateAndFilter($request,[
+            'id'=>'required',
+        ],[
+            'id.required'=>'请选择要删除的项目'
+        ]);
 
-
-    public function update($id)
-    {
-        try {
-            DB::beginTransaction();
-
-            $user = array_merge(['id' => $id], Input::all());
-            isError(UserService::save($user), true);
-
-            DB::commit();
-            return responseSuccess();
-        } catch (Exception $ex) {
-            DB::rollback();
-            return responseError($ex);
-        }
-    }
-
-
-    public function destroy($id)
-    {
-        try {
-            DB::beginTransaction();
-
-            isError(UserService::delete($id), true);
-
-            DB::commit();
-            return responseSuccess();
-        } catch (Exception $ex) {
-            DB::rollback();
-            return responseError($ex);
-        }
-    }
-
-
-    public function activate(Request $request)
-    {
-        try {
-            DB::beginTransaction();
-
-            $id = $request->get('id');
-            $active = $request->get('active');
-
-            $user = UserService::get($id);
-            if (!empty($user)) {
-                if ($active == "0")
-                    $rs = $user->inactivate();
-                else
-                    $rs = $user->activate();
-            }
-
-            DB::commit();
-            return responseSuccess();
-        } catch (Exception $ex) {
-            DB::rollback();
-            return responseError($ex);
-        }
-
-    }
-
-    public function batchDestroy(Request $request)
-    {
-        $ids = $request->get('ids');
-        if (empty($ids))
-            return responseFailed(-1, "请勾选想要删除的条目");
-
-        try {
-            DB::beginTransaction();
-
-            isError(UserService::delete($ids), true);
-
-            DB::commit();
-            return responseSuccess();
-        } catch (Exception $ex) {
-            DB::rollback();
-            return responseError($ex);
-        }
+        RoleService::instance()->delete($params['id']);
+        return responseSuccess();
     }
 }

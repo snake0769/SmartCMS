@@ -12,8 +12,6 @@
 */
 use Illuminate\Support\Facades\View;
 
-
-
 Route::group(['prefix'=>'admin'],function(){
     Route::controller('auth', 'Admin\\AuthController');
     Route::controller('home','Admin\\HomeController');

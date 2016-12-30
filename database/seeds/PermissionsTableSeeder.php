@@ -16,13 +16,41 @@ class PermissionsTableSeeder extends Seeder
         //管理员管理
         $rootId = $this->generateTopPermission("admin.users","允许管理员管理");
         $this->generateBasePermission($rootId,['admin.users'=>'管理员','admin.roles'=>'角色'],"index");
-        $this->generatePermission($rootId,['admin.permissions'=>'权限'],"index",['index'=>'管理','show'=>'查看','edit'=>'编辑']);
+        //$this->generatePermission($rootId,['admin.permissions'=>'权限'],"index",['index'=>'管理','show'=>'查看','edit'=>'编辑']);
         //系统管理
         $rootId = $this->generateTopPermission("admin.system","允许系统管理");
         $this->generatePermission($rootId,['admin.system'=>'系统选项'],"index",['index'=>'管理','show'=>'查看','edit'=>'编辑']);
         $this->generatePermission($rootId,['admin.logs'=>'操作日志'],"index",['index'=>'管理','show'=>'查看']);
 
     }
+
+    /*public function genAdmin(){
+        $data[] = [
+            "name" => 'admin.users',"label" => '允许管理员管理',"pid"=>0,"layer"=>1,
+            "created_at" => Carbon::now()->toDateTimeString(),
+            "updated_at" => Carbon::now()->toDateTimeString()
+        ];
+        $lv1Id =  DB::table("permissions")->insertGetId($data);
+
+        $data = [];
+        $data[] = [
+            "name" => 'admin.users.index',"label" => '管理员',"pid"=>$lv1Id,"layer"=>2,
+            "created_at" => Carbon::now()->toDateTimeString(),
+            "updated_at" => Carbon::now()->toDateTimeString()
+        ];
+        $lv2Id =  DB::table("permissions")->insertGetId($data);
+
+        $data[] = [
+            "name" => 'admin.users.show',"label" => '查看',"pid"=>$lv2Id,"layer"=>3,
+            "created_at" => Carbon::now()->toDateTimeString(),
+            "updated_at" => Carbon::now()->toDateTimeString()
+        ];
+        $data[] = [
+            "name" => 'admin.users.show',"label" => '查看',"pid"=>$lv2Id,"layer"=>3,
+            "created_at" => Carbon::now()->toDateTimeString(),
+            "updated_at" => Carbon::now()->toDateTimeString()
+        ];
+    }*/
 
 
     /**

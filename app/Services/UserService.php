@@ -44,9 +44,9 @@ class UserService extends Service
             \DB::beginTransaction();
 
             //如果属性未发生更改，则直接返回
-            if (isset($attributes['password'])) {
+            /*if (isset($attributes['password'])) {
                 $attributes['password'] = bcrypt($attributes['password']);
-            }
+            }*/
 
             $roles = array_pull($attributes, "roles");
             $rs = parent::update($attributes);
@@ -149,7 +149,7 @@ class UserService extends Service
      * @return string
      */
     public function getRolesLabel($user){
-        /*$roles = $user->roles;
+        $roles = $user->roles;
         $labels = "";
         foreach($roles as $role){
             $labels .= trim($role->name.",");
@@ -157,7 +157,7 @@ class UserService extends Service
         if($labels !== ""){
             $labels = substr($labels,0,strlen($labels)-1);
         }
-        return $labels;*/
+        return $labels;
     }
 
     /**
