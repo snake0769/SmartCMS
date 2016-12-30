@@ -29,14 +29,6 @@ class DetectPermissions
         $actionName = $request->route()->getActionName();
         $action = Action::where('action',$actionName)->first();
 
-        //超级用户直接开放权限
-        \Gate::before(function($user){
-            /** @var $user User */
-            if($user->isSuperUser()){
-                return true;
-            }
-        });
-
         if(empty($action) || \Gate::denies($action->permission)){
             if($request->wantsJson()){
                 return  response()->json('权限不足');

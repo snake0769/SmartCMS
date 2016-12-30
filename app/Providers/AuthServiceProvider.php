@@ -28,6 +28,14 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies($gate);
 
+        //超级用户直接开放权限
+        \Gate::before(function($user){
+            /** @var $user User */
+            if($user->isSuperUser()){
+                return true;
+            }
+        });
+
         $permissions = Permission::getAll();
         foreach ($permissions as $permission) {
             /** @var Permission $permission */

@@ -35,7 +35,7 @@ class SystemConfigsTableSeeder extends Seeder
             ],
             [
                 "id" =>\app\Components\Util\StringHelper::uuid(),
-                'name'            => '后台描述',
+                'name'            => '描述',
                 'key'              => 'admin.base.description',
                 'value'             => '这是企业网站管理后台',
                 'created_at'        => Carbon::now(),
@@ -43,13 +43,42 @@ class SystemConfigsTableSeeder extends Seeder
             ],
             [
                 "id" =>\app\Components\Util\StringHelper::uuid(),
-                'name'            => '公司名称',
-                'key'              => 'admin.base.companyName',
+                'name'            => 'css、js、images根路径配置',
+                'key'              => 'admin.base.assetsRoot',
+                'value'             => 'public',
+                'created_at'        => Carbon::now(),
+                'updated_at'        => Carbon::now(),
+            ],
+            [
+                "id" =>\app\Components\Util\StringHelper::uuid(),
+                'name'            => '上传文件目录',
+                'key'              => 'admin.base.uploadRoot',
+                'value'             => 'public/upload',
+                'created_at'        => Carbon::now(),
+                'updated_at'        => Carbon::now(),
+            ],
+            [
+                "id" =>\app\Components\Util\StringHelper::uuid(),
+                'name'            => '底部版权信息',
+                'key'              => 'admin.base.footer',
                 'value'             => 'Admin.LTD',
                 'created_at'        => Carbon::now(),
                 'updated_at'        => Carbon::now(),
             ],
+            [
+                "id" =>\app\Components\Util\StringHelper::uuid(),
+                'name'            => '备案号',
+                'key'              => 'admin.base.icp',
+                'value'             => '粤ICP备88888888',
+                'created_at'        => Carbon::now(),
+                'updated_at'        => Carbon::now(),
+            ],
         ];
+
+        //按顺序填充排序字段sort
+        foreach($datas as $sort=>&$value){
+            $value['sort'] = $sort;
+        }
 
         DB::table('system_configs')->insert($datas);
 

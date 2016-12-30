@@ -42,10 +42,10 @@ class AppServiceProvider extends ServiceProvider
             $configSrv = SystemConfigService::instance();
             $configs = $configSrv->getConfigs();
             //g开头表示global，全局视图变量都以g开头
-            view()->share('gTitle',$configs['admin.base.title']);
-            view()->share('gKeywords',$configs['admin.base.keywords']);
-            view()->share('gDescription',$configs['admin.base.description']);
-            view()->share('gCompanyName',$configs['admin.base.companyName']);
+            view()->share('gTitle',$configs['admin.base.title']['value']);
+            view()->share('gKeywords',$configs['admin.base.keywords']['value']);
+            view()->share('gDescription',$configs['admin.base.description']['value']);
+            view()->share('gCompanyName',$configs['admin.base.companyName']['value']);
         }catch(\Exception $ex){
         }
 

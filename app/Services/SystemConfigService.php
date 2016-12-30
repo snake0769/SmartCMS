@@ -22,7 +22,7 @@ class SystemConfigService extends Service
 {
 
     /** @var SystemConfig **/
-    protected $baseModel = SystemConfig::class;
+    protected $baseModel;
     /** @var User **/
     protected $userModel;
     /** @var Menu **/
@@ -30,6 +30,7 @@ class SystemConfigService extends Service
 
     function __construct()
     {
+        $this->baseModel = \Map::getClass(SystemConfig::class,self::class);
         $this->userModel = \Map::getClass(User::class,self::class);
         $this->menuModel = \Map::getClass(Menu::class,self::class);
     }
@@ -38,15 +39,12 @@ class SystemConfigService extends Service
      * 获取系统配置
      */
     public function getConfigs(){
-        /** @var $CONFIG SystemConfig **/
-        $CONFIG = $this->baseModel;
-
         /** @var $configs SystemConfig[] **/
-        $configs = $CONFIG::all()->all();
+        $configs = parent::all(null,null,null,['sort'=>'asc'])->all();
         $result = [];
         foreach($configs as $config){
             $kv = $config->attributesToArray();
-            $result[$kv['key']] = $kv['value'];
+            $result[$kv['key']] = $kv;
         }
         return $result;
 
@@ -92,7 +90,6 @@ class SystemConfigService extends Service
      * @return Collection
      */
     public function getAllMenus(){
-        //throw new FatalErrorException(null,null,null,null,null);
         /**@var $MENU Menu*/
         $MENU = $this->menuModel;
         $menus = \Cache::rememberForever('admin.menu', function() use($MENU) {
@@ -101,5 +98,19 @@ class SystemConfigService extends Service
 
         return $menus;
     }
+
+    /**
+     * @param array $attributes
+     * @return bool|int
+     * @throws \App\Exceptions\BusinessException
+     */
+    public function update(array $attributes)
+    {
+        //根据attributes是否包含id值，执行插入或更新操作，并称“保存”操作
+        /**@var $CONFIG SystemConfig*/
+        $CONFIG = $this->baseModel;
+        return $CONFIG::setConfigs($attributes);
+    }
+
 
 }

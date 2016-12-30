@@ -264,3 +264,17 @@ function array_key_value(array $array, $pos)
     }
 
 }
+
+/**
+ * 重新设置数组的key
+ * @param $array
+ * @param $key
+ * @param $newKey
+ */
+function array_key_reset(&$array,$key,$newKey){
+    if(array_key_exists($key,$array)){
+        $value = $array[$key];
+        unset($array[$key]);
+        $array[$newKey] = $value;
+    }
+}

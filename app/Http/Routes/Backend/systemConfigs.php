@@ -7,5 +7,9 @@
  */
 
 Route::group(['middleware'=>'auth.permission'],function(){
-    Route::resource('system', 'Admin\\SystemConfigsController');
+
+    Route::get('system/index',['uses'=>'Admin\\SystemConfigsController@index']);
+
+    Route::post('system/edit',['uses'=>'Admin\\SystemConfigsController@edit']);
+
 });

@@ -18,6 +18,7 @@ class CreateSystemConfigsTable extends Migration
             $table->string('name');
             $table->string("key")->unique();
             $table->string("value");
+            $table->integer("sort");
             $table->timestamps();
         });
     }
